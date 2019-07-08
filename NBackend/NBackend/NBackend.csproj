@@ -205,6 +205,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helper\JsonConverter.cs" />
     <Compile Include="Helper\TokenManager.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.Designer.cs">
@@ -221,6 +222,10 @@
     <Compile Include="Migrations\201907071749454_Course_Teacher.cs" />
     <Compile Include="Migrations\201907071749454_Course_Teacher.Designer.cs">
       <DependentUpon>201907071749454_Course_Teacher.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907080740267_Twitter_User.cs" />
+    <Compile Include="Migrations\201907080740267_Twitter_User.Designer.cs">
+      <DependentUpon>201907080740267_Twitter_User.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
@@ -343,6 +348,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907071749454_Course_Teacher.resx">
       <DependentUpon>201907071749454_Course_Teacher.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907080740267_Twitter_User.resx">
+      <DependentUpon>201907080740267_Twitter_User.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
