@@ -42,5 +42,8 @@ namespace NBackend.Models
         [Required]
         [MaxLength(100)]
         public string avatar { get; set; }
+
+        [MaxLength(20)]
+        public string role { get; set; }
     }
 }

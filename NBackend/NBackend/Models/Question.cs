@@ -28,8 +28,8 @@ namespace NBackend.Models
         [Required]
         [MaxLength(20)]
         public string answer { get; set; }
-        [Required]
-        public int single_score { get; set; }
+        //[Required]
+        //public int single_score { get; set; }
 
     }
 }

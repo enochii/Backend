@@ -6,10 +6,14 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
+
 namespace NBackend.Biz
 {
     public class UserBiz
     {
+        public const string TEACHER_EDU = "teacher_edu";
+        public const string TEACHER_MANAGE = "teacher_manage";
+        public const string STUDENT = "student";
 
         public static object ListToObj(DbSet<User> users)
         {
@@ -42,7 +46,7 @@ namespace NBackend.Biz
         {
             Dictionary<string, string> body = JsonConverter.Decode(json);
 
-            var user_id = body["user_id"];
+            var user_id = int.Parse(body["user_id"]);
             var user_name = body["user_name"];
             var department = body["password"];
             var password = body["password"];
@@ -53,12 +57,126 @@ namespace NBackend.Biz
 
             //检查id是否已经存在
             var ctx = new NBackendContext();
-            
+            if(ctx.Users.Any(_user=>_user.Id == user_id))
+            {
+                return JsonConverter.Error(400, "该用户已经注册");
+            }
 
             //根据role的值加入对应的表
+            //需要插入两张表
+            if (role.Equals(STUDENT))
+            {
+                var grade = int.Parse(body["grade"]);
+                if (ctx.Students.Any(_user => _user.StudentId == user_id))
+                {
+                    return JsonConverter.Error(400, "该用户已经注册");
+                }
+                ctx.Students.Add(new Student
+                {
+                    StudentId = user_id,
+                    grade = grade
+                });
+            }
+            else
+            {
 
+                if (!role.Equals(TEACHER_EDU) && !role.Equals(TEACHER_MANAGE))
+                {
+                    return JsonConverter.Error(400, "角色字段值有误");
+                }
+                if (ctx.Teachers.Any(_user => _user.TeacherId == user_id))
+                {
+                    return JsonConverter.Error(400, "该用户已经注册");
+                }
+                var job_title = body["job_title"];
+                ctx.Teachers.Add(new Teacher
+                {
+                    TeacherId = user_id,
+                    job_title = job_title,
+                    is_manager = role.Equals(TEACHER_MANAGE)
+                });
 
-            return null;
+            }
+            var user = new User
+            {
+                Id = user_id,
+                user_name = user_name,
+                department = department,
+                password = password,
+                phone_number = phone_number,
+                mail = email,
+                avatar = avatar,
+                role = role
+            };
+            ctx.Users.Add(user);
+            ctx.SaveChanges();
+
+            return JsonConverter.BuildResult(null, 200, "ok no趴笨");
+        }
+
+        public static object Login(object json)
+        {
+            var body = JsonConverter.Decode(json);
+
+            var user_id = int.Parse(body["user_id"]);
+            var password = body["password"];
+
+            NBackendContext ctx = new NBackendContext();
+
+            var q = ctx.Users.Where(_user => _user.Id == user_id);
+            if (!q.Any())
+            {
+                return JsonConverter.Error(400, "用户id不正确");
+            }
+            //
+            User user = q.Single();
+            if (!user.password.Equals(password))
+            {
+                return JsonConverter.Error(400, "密码错误");
+            }
+
+            int following_num = user.following.Count();
+            int followers_num = user.followers.Count();
+
+            var token = Helper.JwtManager.GenerateToken(user_id.ToString());
+
+            var data = new
+            {
+                user_id = user_id,
+                user_name = user.user_name,
+                department = user.department,
+                phone_number = user.phone_number,
+                email = user.mail,
+                avatar = user.avatar,
+                role = user.role,
+                token = token,
+                following = following_num,
+                follower = followers_num,
+            };
+
+            return JsonConverter.BuildResult(data, 200, "ok");
+
+        }
+
+        public static object GetUsersByNameOrId(object json)
+        {
+            var body = JsonConverter.Decode(json);
+
+            var list = new List<object>();
+            if (body.ContainsKey("id"))
+            {
+
+            }
+            else if (body.ContainsKey("name") || body["name"].Equals(""))
+            {
+
+            }
+            else
+            {
+                //无字段，暂时返回所有用户？
+            }
+
+            return list;
         }
     }
 }

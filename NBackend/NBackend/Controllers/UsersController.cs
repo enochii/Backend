@@ -19,11 +19,39 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Users
+        [HttpGet]
         public object GetUsers()
         {
             var ctx = new NBackendContext();
             return UserBiz.ListToObj(ctx.Users);
         }
+
+        //登录
+        [HttpPost]
+        [Route("api/login")]
+        public object Login(object json)
+        {
+            return UserBiz.Login(json);
+        }
+        //注册
+        [HttpPost]
+        [Route("api/register")]
+        public object Register(object json)
+        {
+            return UserBiz.Register(json);
+        }
+
+        //获取对应名字用户的信息
+        //[HttpGet]
+        //[Route("api/users")]
+        //public object InfosByName(string name, string id)
+        //{
+        //    return new
+        //    {
+        //        name = name,
+        //        id = id
+        //    };
+        //}
 
         // GET: api/Users/5
         [ResponseType(typeof(User))]

@@ -29,7 +29,8 @@ namespace NBackend.Migrations
                   password = "123456",
                   phone_number = "13112525575",
                   mail = "144@11.com",
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  role = "student"
               },
               new Models.User
               {
@@ -39,7 +40,8 @@ namespace NBackend.Migrations
                   password = "123456",
                   phone_number = "13112525575",
                   mail = "144@11.com",
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  role = "student"
               }
             );
 
