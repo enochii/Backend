@@ -227,6 +227,10 @@
     <Compile Include="Migrations\201907080740267_Twitter_User.Designer.cs">
       <DependentUpon>201907080740267_Twitter_User.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907080813590_Question_Section.cs" />
+    <Compile Include="Migrations\201907080813590_Question_Section.Designer.cs">
+      <DependentUpon>201907080813590_Question_Section.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
@@ -289,7 +293,9 @@
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -351,6 +357,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907080740267_Twitter_User.resx">
       <DependentUpon>201907080740267_Twitter_User.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907080813590_Question_Section.resx">
+      <DependentUpon>201907080813590_Question_Section.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

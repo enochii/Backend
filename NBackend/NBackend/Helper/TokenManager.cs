@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Backend
+namespace NBackend.Helper
 {
     public static class JwtManager
     {

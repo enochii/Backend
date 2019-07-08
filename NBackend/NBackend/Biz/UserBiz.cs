@@ -105,9 +105,11 @@ namespace NBackend.Biz
                 password = password,
                 phone_number = phone_number,
                 mail = email,
-                avatar = avatar
+                avatar = avatar,
+                role = role
             };
             ctx.Users.Add(user);
+            ctx.SaveChanges();
 
             return JsonConverter.BuildResult(null, 200, "ok no趴笨");
         }
@@ -121,9 +123,60 @@ namespace NBackend.Biz
 
             NBackendContext ctx = new NBackendContext();
 
-            //var user = ctx.Users
+            var q = ctx.Users.Where(_user => _user.Id == user_id);
+            if (!q.Any())
+            {
+                return JsonConverter.Error(400, "用户id不正确");
+            }
+            //
+            User user = q.Single();
+            if (!user.password.Equals(password))
+            {
+                return JsonConverter.Error(400, "密码错误");
+            }
 
-            return null;
+            int following_num = user.following.Count();
+            int followers_num = user.followers.Count();
+
+            var token = Helper.JwtManager.GenerateToken(user_id.ToString());
+
+            var data = new
+            {
+                user_id = user_id,
+                user_name = user.user_name,
+                department = user.department,
+                phone_number = user.phone_number,
+                email = user.mail,
+                avatar = user.avatar,
+                role = user.role,
+                token = token,
+                following = following_num,
+                follower = followers_num,
+            };
+
+            return JsonConverter.BuildResult(data, 200, "ok");
+
+        }
+
+        public static object GetUsersByNameOrId(object json)
+        {
+            var body = JsonConverter.Decode(json);
+
+            var list = new List<object>();
+            if (body.ContainsKey("id"))
+            {
+
+            }
+            else if (body.ContainsKey("name") || body["name"].Equals(""))
+            {
+
+            }
+            else
+            {
+                //无字段，暂时返回所有用户？
+            }
+
+            return list;
         }
     }
 }
