@@ -20,13 +20,29 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
-            //    context.People.AddOrUpdate(
-            //      p => p.FullName,
-            //      new Person { FullName = "Andrew Peters" },
-            //      new Person { FullName = "Brice Lambson" },
-            //      new Person { FullName = "Rowan Miller" }
-            //    );
-            //
+            context.Users.AddOrUpdate(
+              p => p.user_name,
+              new Models.User {
+                  Id = 1651162,
+                  user_name = "航程施",
+                  department = "软件学院",
+                  password = "123456",
+                  phone_number = "13112525575",
+                  mail = "144@11.com",
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
+              },
+              new Models.User
+              {
+                  Id = 1651163,
+                  user_name = "施程航",
+                  department = "软件学院",
+                  password = "123456",
+                  phone_number = "13112525575",
+                  mail = "144@11.com",
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
+              }
+            );
+
         }
     }
 }

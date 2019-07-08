@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using NBackend.Biz;
 using NBackend.Models;
 
 namespace NBackend.Controllers
@@ -18,9 +19,10 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Users
-        public IQueryable<User> GetUsers()
+        public object GetUsers()
         {
-            return db.Users;
+            var ctx = new NBackendContext();
+            return UserBiz.ListToObj(ctx.Users);
         }
 
         // GET: api/Users/5
