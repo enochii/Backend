@@ -26,5 +26,9 @@ namespace NBackend.Models
         [MinLength(16)]
         //1997.11.12 12:01
         public string time { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string image { get; set; }
     }
 }

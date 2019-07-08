@@ -22,5 +22,7 @@ namespace NBackend.Models
         //试题序号
         [Required]
         public int index { get; set; }
+        [Required]
+        public int score { get; set; }
     }
 }
