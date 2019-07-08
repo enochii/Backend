@@ -37,5 +37,8 @@ namespace NBackend.Models
         public int section_timeId { get; set; }
         public virtual SectionTime SectionTime { get; set; }
 
+        [Required]
+        [MaxLength(100)]
+        public string avatar { get; set; }
     }
 }
