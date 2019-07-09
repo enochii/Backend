@@ -17,6 +17,7 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
+        [AllowAnonymous]
         [HttpGet]
         [Route("api/class_work")]
         public object GetClassWork(object json)
@@ -125,6 +126,14 @@ namespace NBackend.Controllers
         private bool BroadcastExists(int id)
         {
             return db.Broadcasts.Count(e => e.BroadcastId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/class_work")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

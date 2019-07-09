@@ -18,7 +18,8 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/attendance")]
         public object GetAttendanceRecords(object json)
         {
@@ -30,8 +31,9 @@ namespace NBackend.Controllers
             return Biz.AttendanceBiz.GetAttendanceRecords(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
-        [Route("api/attendance")]
+        [Route("api/attendance_records")]
         public object PostAttendanceRecords(object json)
         {
             String token = Request.Headers.Authorization.Parameter;
@@ -42,8 +44,9 @@ namespace NBackend.Controllers
             return Biz.AttendanceBiz.PostAttendance(json);
         }
 
+        [AllowAnonymous]
         [HttpPut]
-        [Route("api/attendance")]
+        [Route("api/new_attendance")]
         public object PutAttendanceRecords(object json)
         {
             String token = Request.Headers.Authorization.Parameter;
@@ -166,6 +169,16 @@ namespace NBackend.Controllers
         private bool AttentionExists(int id)
         {
             return db.Attentions.Count(e => e.StudentId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/attendance")]
+        [Route("api/attendance_records")]
+        [Route("api/new_attendance")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

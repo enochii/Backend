@@ -107,5 +107,19 @@ namespace NBackend.Controllers
         {
             return db.Users.Count(e => e.Id == id) > 0;
         }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/followings")]
+        [Route("api/following")]
+        [Route("api/followers")]
+        [Route("api/users")]
+        [Route("api/register")]
+        [Route("api/login")]
+        public object Options()
+        {
+            return null;
+        }
+
     }
 }

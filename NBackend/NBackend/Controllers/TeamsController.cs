@@ -18,7 +18,8 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/teams")]
         public object GetTeams(object json)
         {
@@ -26,7 +27,8 @@ namespace NBackend.Controllers
             return Biz.TeamBiz.GetTeams(json);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/part_teams")]
         public object GetPartTeams(object json)
         {
@@ -38,7 +40,8 @@ namespace NBackend.Controllers
             return Biz.TeamBiz.GetTeamsByKeyWords(json);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/its_teams")]
         public object GetItsTeams(object json)
         {
@@ -50,6 +53,7 @@ namespace NBackend.Controllers
             return Biz.TeamBiz.GetItsTeams(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/teams")]
         public object PostTeams(object json)
@@ -62,6 +66,7 @@ namespace NBackend.Controllers
             return Biz.TeamBiz.PostTeam(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/teams_attendance")]
         public object PostTeamsAttendance(object json)
@@ -186,6 +191,18 @@ namespace NBackend.Controllers
         private bool TeamExists(int id)
         {
             return db.Teams.Count(e => e.TeamId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/teams")]
+        [Route("api/part_teams")]
+        [Route("api/its_teams")]
+        [Route("api/teams")]
+        [Route("api/teams_attendance")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

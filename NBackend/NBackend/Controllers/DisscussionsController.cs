@@ -18,14 +18,16 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Disscussions
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/discussions")]
         public object GetDisscussions(object json)
         {
             return Biz.DiscussionBiz.GetDiscussions(json);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/one_discussion")]
         public object GetOneDiscussion(object json)
         {
@@ -33,6 +35,7 @@ namespace NBackend.Controllers
             return Biz.DiscussionBiz.GetOneDiscussion(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/discussion")]
         public object PostDiscussion(object json)
@@ -151,6 +154,16 @@ namespace NBackend.Controllers
         private bool DisscussionExists(int id)
         {
             return db.Disscussions.Count(e => e.DisscussionId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/discussions")]
+        [Route("api/one_discussion")]
+        [Route("api/discussion")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

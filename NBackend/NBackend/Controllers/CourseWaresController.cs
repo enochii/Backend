@@ -17,7 +17,9 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
-        // GET: api/CourseWares
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/CourseWares")]
         public object GetCourseWares(object json)
         {
             return Biz.CoursewareBiz.GetAllCoursewares(json);
@@ -114,6 +116,14 @@ namespace NBackend.Controllers
         private bool CourseWareExists(int id)
         {
             return db.CourseWares.Count(e => e.CourseWareId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/CourseWares")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

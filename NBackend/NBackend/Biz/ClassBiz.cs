@@ -16,7 +16,7 @@ namespace NBackend.Biz
             using (var context = new NBackendContext())
             {
                 var time_info = (from section in context.Sections
-                                 join multiSectionTime in context.MultiSectionsTimes on new { section.SecId, section.courseId, section.semester, section.year }
+                                 join multiSectionTime in context.MultiSectionTimes on new { section.SecId, section.courseId, section.semester, section.year }
                                                                                     equals new { multiSectionTime.SecId, multiSectionTime.courseId, multiSectionTime.semester, multiSectionTime.year }
                                  join sectionTime in context.SectionTimes on multiSectionTime.section_timeId equals sectionTime.SectionTimeId
                                  where section.SecId == sec_id && section.courseId == course_id && section.semester == semester && section.year == year
