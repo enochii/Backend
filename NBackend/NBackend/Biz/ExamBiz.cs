@@ -5,6 +5,8 @@ using System.Linq;
 using System.Web;
 using NBackend.Models;
 
+using Newtonsoft.Json;
+
 namespace NBackend.Biz
 {
     public class ExamBiz
@@ -26,10 +28,10 @@ namespace NBackend.Biz
             User user = UserBiz.getUserById(ctx, user_id);
             if(user == null || user.role != "teacher_edu")
             {
-                return JsonConverter.Error(400, "该用户没有权限创建试卷");
+                return Helper.JsonConverter.Error(400, "该用户没有权限创建试卷");
             }
 
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
 
             int sec_id = int.Parse(body["sec_id"]);
             int course_id = int.Parse(body["course_id"]);
@@ -64,7 +66,7 @@ namespace NBackend.Biz
             {
                 exam_id = exam.ExamId
             };
-            return JsonConverter.BuildResult(data);
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         private static int type2Id(string type)
@@ -91,7 +93,7 @@ namespace NBackend.Biz
         //获取班级的所有试卷基本信息
         public static object getExamsOfClass(string token ,object json)
         {
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
 
             int sec_id = int.Parse(body["sec_id"]);
             int course_id = int.Parse(body["course_id"]);
@@ -104,7 +106,7 @@ namespace NBackend.Biz
             User user = UserBiz.getUserById(ctx, user_id);
             if (user == null)
             {
-                return JsonConverter.Error(400, "查无此人");
+                return Helper.JsonConverter.Error(400, "查无此人");
             }
 
             //需要验证该学生、老师是否属于某个班级？？？不用，查出来的只有这个班级
@@ -118,11 +120,11 @@ namespace NBackend.Biz
 
             if (data == null)
             {
-                return JsonConverter.Error(400, "你好像没权限(＾Ｕ＾)ノ~ＹＯ");
+                return Helper.JsonConverter.Error(400, "你好像没权限(＾Ｕ＾)ノ~ＹＯ");
             }
             else
             {
-                return JsonConverter.BuildResult(data);
+                return Helper.JsonConverter.BuildResult(data);
             }
         }
 
@@ -179,7 +181,7 @@ namespace NBackend.Biz
         //获取某张试卷所有的题目
         public static object getQuestionsOfExam(string token, object json)
         {
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
             int user_id = JwtManager.DecodeToken(token);
 
             int exam_id = int.Parse(body["exam_id"]);
@@ -203,7 +205,7 @@ namespace NBackend.Biz
 
             if(!quess.Any())
             {
-                return JsonConverter.Error(400, "不是考试没了就是题库崩了？"); 
+                return Helper.JsonConverter.Error(400, "不是考试没了就是题库崩了？"); 
             }
 
             Exam exam = getExamById(ctx, exam_id);
@@ -295,7 +297,7 @@ namespace NBackend.Biz
             }
             else
             {
-                return JsonConverter.Error(400, "您没有权限(＾Ｕ＾)ノ~ＹＯ");
+                return Helper.JsonConverter.Error(400, "您没有权限(＾Ｕ＾)ノ~ＹＯ");
             }
 
             return null;
@@ -316,7 +318,7 @@ namespace NBackend.Biz
         public static object getQuestionsOfCourse(string token, object json)
         {
             int user_id = JwtManager.DecodeToken(token);
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
             int course_id = int.Parse(body["course_id"]);
 
             NBackendContext ctx = new NBackendContext();
@@ -337,7 +339,7 @@ namespace NBackend.Biz
                 });
             }
 
-            return JsonConverter.BuildResult(data);
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         private const int POST = 1, DELETE = 2, PUT = 3;
@@ -352,10 +354,10 @@ namespace NBackend.Biz
             if (user == null || !user.role.Equals("teacher_edu"))
             {
                 //可以再判断这个老师是不是教这个的
-                return JsonConverter.Error(400, "您未登录或者没有权限");
+                return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
             }
 
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
             //删除、修改、提交题目分发逻辑
             switch (option)
             {
@@ -383,7 +385,7 @@ namespace NBackend.Biz
                             {
                                 question_id = newq.QuestionId
                             };
-                            return JsonConverter.BuildResult(data);
+                            return Helper.JsonConverter.BuildResult(data);
                         }
                         else if(option == PUT)
                         {
@@ -391,7 +393,7 @@ namespace NBackend.Biz
                             var q = ctx.Questions.Where(qu => qu.QuestionId == question_id);
                             if (!q.Any())
                             {
-                                return JsonConverter.Error(400, "没有这道题");
+                                return Helper.JsonConverter.Error(400, "没有这道题");
                             }
                             else
                             {
@@ -399,7 +401,7 @@ namespace NBackend.Biz
                                 ctx.Questions.Remove(question);
                             }
                          }
-                        return JsonConverter.BuildResult(null);
+                        return Helper.JsonConverter.BuildResult(null);
 
                     }
                 case DELETE:
@@ -408,7 +410,7 @@ namespace NBackend.Biz
                         var q = ctx.Questions.Where(qu => qu.QuestionId == question_id);
                         if (!q.Any())
                         {
-                            return JsonConverter.Error(400, "没有这道题");
+                            return Helper.JsonConverter.Error(400, "没有这道题");
                         }
                         else
                         {
@@ -417,7 +419,7 @@ namespace NBackend.Biz
                             ctx.SaveChanges();
                         }
 
-                        return JsonConverter.BuildResult(null);
+                        return Helper.JsonConverter.BuildResult(null);
                         //break;
                     }
                     
@@ -454,12 +456,37 @@ namespace NBackend.Biz
             if (user == null || !user.role.Equals("teacher_edu"))
             {
                 //可以再判断这个老师是不是教这个的
-                return JsonConverter.Error(400, "您未登录或者没有权限");
+                return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
             }
 
             //[ { exam_id, question_id, score, index}, {...}]
-            var body = JsonConverter.Decode(json);
+            var body = Helper.JsonConverter.Decode(json);
+            int exam_id = int.Parse(body["exam_id"]);
+            string _quess = body["questions"];
 
+            var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
+
+            var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
+            foreach(object obj in quess)
+            {
+                var _body = Helper.JsonConverter.Decode(obj);
+                int question_id = int.Parse(_body["question_id"]);
+                int single_score = int.Parse(_body["score"]);
+                int index = int.Parse(_body["index"]);
+
+                if (questions.Contains(question_id))
+                {
+                    ctx.ExamQuestions.Add(new ExamQuestion
+                    {
+                        examId = exam_id,
+
+                    });
+                }
+                else
+                {
+                    //有一道题找不到？
+                }
+            }
             return null;
         }
     }

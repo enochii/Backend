@@ -28,7 +28,7 @@ namespace NBackend.Controllers
         }
 
         // GET: api/Twitters
-        [HttpGet]
+        [HttpPost]
         [Route("api/twitters")]
         public object GetTwitters(object json)
         {
