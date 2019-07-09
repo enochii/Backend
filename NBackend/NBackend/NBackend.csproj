@@ -179,13 +179,10 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-
     <Compile Include="Biz\BroadcastBiz.cs" />
     <Compile Include="Biz\ClassBiz.cs" />
     <Compile Include="Biz\CoursewareBiz.cs" />
-
     <Compile Include="Biz\TwitterBiz.cs" />
-
     <Compile Include="Biz\UserBiz.cs" />
     <Compile Include="Controllers\AttentionsController.cs" />
     <Compile Include="Controllers\BroadcastsController.cs" />
@@ -195,6 +192,7 @@
     <Compile Include="Controllers\ExamQuestionsController.cs" />
     <Compile Include="Controllers\ExamsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MultiSectionsTimesController.cs" />
     <Compile Include="Controllers\QuestionsController.cs" />
     <Compile Include="Controllers\SectionsController.cs" />
     <Compile Include="Controllers\SectionTimesController.cs" />
@@ -238,6 +236,14 @@
     <Compile Include="Migrations\201907080813590_Question_Section.Designer.cs">
       <DependentUpon>201907080813590_Question_Section.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907090306209_MaybeFinal.cs" />
+    <Compile Include="Migrations\201907090306209_MaybeFinal.Designer.cs">
+      <DependentUpon>201907090306209_MaybeFinal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907090319453_MultiSections.cs" />
+    <Compile Include="Migrations\201907090319453_MultiSections.Designer.cs">
+      <DependentUpon>201907090319453_MultiSections.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
@@ -248,6 +254,7 @@
     <Compile Include="Models\Exam.cs" />
     <Compile Include="Models\ExamQuestion.cs" />
     <Compile Include="Models\Follow.cs" />
+    <Compile Include="Models\MultiSectionsTime.cs" />
     <Compile Include="Models\NBackendContext.cs" />
     <Compile Include="Models\TeacherBroadcast.cs" />
     <Compile Include="Models\TeamStudent.cs" />
@@ -367,6 +374,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907080813590_Question_Section.resx">
       <DependentUpon>201907080813590_Question_Section.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907090306209_MaybeFinal.resx">
+      <DependentUpon>201907090306209_MaybeFinal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907090319453_MultiSections.resx">
+      <DependentUpon>201907090319453_MultiSections.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Web;
 
 namespace NBackend.Models
 {
-    public class Section
+    public class MultiSectionsTime
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Key, Column(Order = 1)]
@@ -26,24 +26,18 @@ namespace NBackend.Models
         [Key, Column(Order = 4)]
         public int year { get; set; }
 
+        public Section Section { get; set; }
+
+        [Required, ForeignKey("SectionTime")]
+        public int section_timeId { get; set; }
+        public virtual SectionTime SectionTime { get; set; }
+
         [Required]
         [MaxLength(20)]
-        public string building { get; set; }
-        [Required]
-        [MaxLength(20)]
-        public string room_numer { get; set; }
+        public string day { get; set; }
 
-        //[Required, ForeignKey("SectionTime")]
-        //public int section_timeId { get; set; }
-        //public virtual SectionTime SectionTime { get; set; }
-
+        // 1 表示单周，2表示双周，3表示单双周
         [Required]
-        public int start_week { get; set; }
-        [Required]
-        public int end_week { get; set; }
-
-        [Required]
-        [MaxLength(100)]
-        public string avatar { get; set; }
+        public int single_or_double { get; set; }
     }
 }
