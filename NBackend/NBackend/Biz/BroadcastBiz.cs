@@ -10,7 +10,7 @@ namespace NBackend.Biz
 {
     public class BroadcastBiz
     {
-        public static object GetAllHomework(object json, string token)
+        public static object GetAllHomework(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);

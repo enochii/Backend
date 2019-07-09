@@ -10,7 +10,7 @@ namespace NBackend.Biz
 {
     public class CoursewareBiz
     {
-        public static object GetAllCoursewares(object json, string token)
+        public static object GetAllCoursewares(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);

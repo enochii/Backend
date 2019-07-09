@@ -11,7 +11,7 @@ namespace NBackend.Biz
 {
     public class ClassBiz
     {
-        public static object GetAllClasses(string token)
+        public static object GetAllClasses()
         {
             using (var context = new NBackendContext())
             {
@@ -20,15 +20,41 @@ namespace NBackend.Biz
 
                 foreach (var a_class in classes)
                 {
+                    var a_course = (from each_course in context.Courses
+                                    where each_course.CourseId == a_class.courseId
+                                    select new
+                                    {
+                                        course_name = each_course.course_name,
+                                        description = each_course.description
+                                    });
+                    var a_teacher = (from each_class in context.Sections
+                                     join each_teaching in context.Teaches
+                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                     where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                     select new
+                                     {
+                                         teacher_name = each_user.user_name,
+                                         avatar = each_user.avatar
+                                     });
+                    var the_course = a_course.Single();
+                    var the_teacher = a_teacher.Single();
+
+
                     list.Add(new
                     {
-                        sec_ID = a_class.SecId,
-                        course_ID = a_class.courseId,
-                        semester = a_class.semester,
-                        year = a_class.year,
+                        //sec_ID = a_class.SecId,
+                        //course_ID = a_class.courseId,
+                        //semester = a_class.semester,
+                        //year = a_class.year,
                         building = a_class.building,
                         room_number = a_class.room_numer,
-                        section_time_ID = a_class.section_timeId
+                        section_time_ID = a_class.section_timeId,
+                        avatar = the_teacher.avatar,
+                        user_name = the_teacher.teacher_name,
+                        course_name = the_course.course_name,
+                        course_description = the_course.description
                     });
                 }
 
@@ -41,7 +67,7 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetOneClass(object json, string token)
+        public static object GetOneClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
@@ -53,39 +79,103 @@ namespace NBackend.Biz
             {
                 var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
                 var the_class = a_class.Single();
+                var a_course = (from each_course in context.Courses
+                                where each_course.CourseId == the_class.courseId
+                                select new
+                                {
+                                    course_name = each_course.course_name,
+                                    description = each_course.description
+                                });
+                var a_teacher = (from each_class in context.Sections
+                                 join each_teaching in context.Teaches
+                                      on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                      equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                 join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                 where each_class.SecId == the_class.SecId && each_class.courseId == the_class.courseId && each_class.semester == the_class.semester && each_class.year == the_class.year
+                                 select new
+                                 {
+                                     teacher_name = each_user.user_name,
+                                     avatar = each_user.avatar
+                                 });
+                var the_course = a_course.Single();
+                var the_teacher = a_teacher.Single();
 
+                var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                 && a.semester == semester && a.year == year && a.validate_status == true);
                 var data = new
                 {
                     building = the_class.building,
                     room_number = the_class.room_numer,
-                    section_time_id = the_class.section_timeId
+                    section_time_id = the_class.section_timeId,
+                    avatar = the_teacher.avatar,
+                    user_name = the_teacher.teacher_name,
+                    course_name = the_course.course_name,
+                    course_description = the_course.description,
+                    student_number = students.Count()
                 };
 
                 return Helper.JsonConverter.BuildResult(data);
             }
         }
 
-        public static object GetPartClass(object json, string token)
+        public static object GetPartClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var year = int.Parse(body["year"]);
             var semester = body["semester"];
+            var student_id = int.Parse(body["student_id"]);
 
             using (var context = new NBackendContext())
             {
-                var some_classes = context.Sections.Where(a => a.year == year && a.semester == semester);
+                var some_classes = (from each_class in context.Sections
+                                    join each_taking in context.Takes 
+                                        on new { each_class.courseId, each_class.semester, each_class.year }
+                                        equals new { each_taking.courseId, each_taking.semester, each_taking.year }
+                                    where each_class.SecId==each_taking.secId&&each_class.semester==semester&&each_class.year==year&&each_taking.StudentId==student_id
+                                    select new
+                                    {
+                                        SecId = each_class.SecId,
+                                        courseId = each_class.courseId,
+                                        year = each_class.year,
+                                        semester = each_class.semester
+                                    });
 
                 var list = new List<object>();
 
-                foreach (var each_class in some_classes)
+                foreach (var a_class in some_classes)
                 {
+                    var a_course = (from each_course in context.Courses
+                                    where each_course.CourseId == a_class.courseId
+                                    select new
+                                    {
+                                        course_name = each_course.course_name,
+                                        description = each_course.description
+                                    });
+                    var a_teacher = (from each_class in context.Sections
+                                     join each_teaching in context.Teaches
+                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                     where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                     select new
+                                     {
+                                         teacher_name = each_user.user_name,
+                                         avatar = each_user.avatar
+                                     });
+                    var the_course = a_course.Single();
+                    var the_teacher = a_teacher.Single();
+
                     list.Add(new
                     {
-                        sec_id = each_class.SecId,
-                        course_id = each_class.courseId,
-                        building = each_class.building,
-                        room_number = each_class.room_numer,
-                        section_time_id = each_class.section_timeId
+                        sec_id = a_class.SecId,
+                        course_id = a_class.courseId,
+                        //building = a_class.building,
+                        //room_number = a_class.room_numer,
+                        //section_time_id = a_class.section_timeId,
+                        avatar = the_teacher.avatar,
+                        user_name = the_teacher.teacher_name,
+                        course_name = the_course.course_name,
+                        course_description = the_course.description
                     });
                 }
 
@@ -98,7 +188,7 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetWaitingClass(object json, string token)
+        public static object GetWaitingClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var student_id = int.Parse(body["student_id"]);
@@ -106,19 +196,50 @@ namespace NBackend.Biz
             using (var context = new NBackendContext())
             {
                 var some_classes = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
+
+                if (!some_classes.Any())
+                {
+                    return Helper.JsonConverter.BuildResult(null);
+                }
+
                 var list = new List<object>();
 
-                foreach (var each_class in some_classes)
+                foreach (var a_class in some_classes)
                 {
+                    var a_course = (from each_course in context.Courses
+                                    where each_course.CourseId == a_class.courseId
+                                    select new
+                                    {
+                                        course_name = each_course.course_name,
+                                        description = each_course.description
+                                    });
+                    var a_teacher = (from each_class in context.Sections
+                                     join each_teaching in context.Teaches
+                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                     where each_class.SecId == a_class.secId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                     select new
+                                     {
+                                         teacher_name = each_user.user_name,
+                                         avatar = each_user.avatar
+                                     });
+                    var the_course = a_course.Single();
+                    var the_teacher = a_teacher.Single();
+
                     list.Add(new
                     {
-                        year = each_class.year,
-                        semester = each_class.semester,
-                        sec_id = each_class.SecId,
-                        course_id = each_class.courseId,
-                        building = each_class.building,
-                        room_number = each_class.room_numer,
-                        section_time_id = each_class.section_timeId
+                        year = a_class.year,
+                        semester = a_class.semester,
+                        sec_id = a_class.secId,
+                        course_id = a_class.courseId,
+                        //building = each_class.building,
+                        //room_number = each_class.room_numer,
+                        //section_time_id = each_class.section_timeId
+                        avatar = the_teacher.avatar,
+                        user_name = the_teacher.teacher_name,
+                        course_name = the_course.course_name,
+                        course_description = the_course.description
                     });
                 }
 
@@ -132,7 +253,7 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetWaitingStudents(object json, string token)
+        public static object GetWaitingStudents(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
@@ -144,9 +265,14 @@ namespace NBackend.Biz
             {
                 var waiting_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                            && a.semester == semester && a.year == year && a.validate_status == false);
-                var students_info = from student in waiting_students
+                if (!waiting_students.Any())
+                {
+                    return Helper.JsonConverter.BuildResult(null);
+                }
+
+                var students_info = (from student in waiting_students
                                     join info in context.Users on student.StudentId equals info.Id
-                                    select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar };
+                                    select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar }).ToArray();
 
                 /*var list = new List<object>();
 
@@ -169,7 +295,7 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetOneClassDetails(object json, string token)
+        public static object GetOneClassDetails(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
@@ -183,20 +309,30 @@ namespace NBackend.Biz
                 var the_class = a_class.Single();
                 var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                        && a.semester == semester && a.year == year);
-
+                var list = new List<object>();
+                foreach(var a_student in students)
+                {
+                    var user_info = context.Users.Single(a => a.Id == a_student.StudentId);
+                    var student_info = context.Students.Single(a => a.StudentId == a_student.StudentId);
+                    list.Add(new {
+                        student_id = a_student.StudentId,
+                        student_name = user_info.user_name,
+                        student_grade = student_info.grade
+                    });
+                }
                 var data = new
                 {
                     building = the_class.building,
                     room_number = the_class.room_numer,
                     section_time_id = the_class.section_timeId,
-                    students
+                    students = list
                 };
 
                 return Helper.JsonConverter.BuildResult(data);
             }
         }
 
-        public static object JoinClass(object json, string token)
+        public static object JoinClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
@@ -236,14 +372,14 @@ namespace NBackend.Biz
             }
         }
 
-        public static object CreateClass(object json, string token)
+        public static object CreateClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
             var year = int.Parse(body["year"]);
             var building = body["building"];
-            var room_number = int.Parse(body["room_number"]);
+            var room_number = body["room_number"];
             var section_time_id = int.Parse(body["section_time_id"]);
             var avatar = body["avatar"];
 
@@ -251,38 +387,32 @@ namespace NBackend.Biz
             {
                 var any_classes = context.Sections.Where(a => a.courseId == course_id
                                                             && a.semester == semester && a.year == year);
-                if (any_classes.Any())
+                context.Sections.Add(new Section
                 {
-                    return Helper.JsonConverter.Error(401, "课程已经存在");
-                }
-                else
-                {
-                    context.Sections.Add(new Section
-                    {
-                        courseId = course_id,
-                        semester = semester,
-                        year = year,
-                        building = building,
-                        room_numer = room_number,
-                        section_timeId = section_time_id,
-                        avatar = avatar
-                    });
-                    var a_class = context.Sections.Where(a => a.courseId == course_id
-                                                            && a.semester == semester && a.year == year);
-                    var the_class = a_class.Single();
-                    return Helper.JsonConverter.BuildResult(new {the_class.SecId });
-                }
+                    courseId = course_id,
+                    semester = semester,
+                    year = year,
+                    building = building,
+                    room_numer = room_number,
+                    section_timeId = section_time_id,
+                    avatar = avatar
+                });
+                context.SaveChanges();
+                var a_class = context.Sections.Where(a => a.courseId == course_id
+                                                        && a.semester == semester && a.year == year).OrderByDescending(a=>a.SecId);
+                var the_class = a_class.First();
+                return Helper.JsonConverter.BuildResult(new { the_class.SecId });
             }
         }
 
-        public static object PermitApplication(object json, string token)
+        public static object PermitApplication(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
             var year = int.Parse(body["year"]);
-            var student_id = int.Parse(body["student_id"]);
+            var student_id = int.Parse(body["user_id"]);
 
             using (var context = new NBackendContext())
             {
@@ -294,10 +424,11 @@ namespace NBackend.Biz
                 }
                 else
                 {
-                    foreach(var one_class in a_class)
+                    foreach (var one_class in a_class)
                     {
                         one_class.validate_status = true;
                     }
+                    context.SaveChanges();
                     return Helper.JsonConverter.BuildResult(null);
                 }
             }
