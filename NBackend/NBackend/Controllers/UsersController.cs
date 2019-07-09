@@ -75,9 +75,9 @@ namespace NBackend.Controllers
             return UserBiz.getFollowers(json);
         }
 
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
-        [Route("api/following")]
+        [Route("api/followings")]
         public object GetFollowing(object json)
         {
             return UserBiz.getFollowing(json);
@@ -106,6 +106,19 @@ namespace NBackend.Controllers
         private bool UserExists(int id)
         {
             return db.Users.Count(e => e.Id == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/followings")]
+        [Route("api/following")]
+        [Route("api/followers")]
+        [Route("api/users")]
+        [Route("api/register")]
+        [Route("api/login")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

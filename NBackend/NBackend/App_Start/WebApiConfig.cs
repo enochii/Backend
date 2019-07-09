@@ -10,9 +10,11 @@ namespace NBackend
     {
         public static void Register(HttpConfiguration config)
         {
-            // New code
-            //var cors = new EnableCorsAttribute("*", "*", "*");
-            config.EnableCors();
+            // Web API 配置和服务
+            config.Filters.Add(new AuthorizeAttribute());
+
+            // Web API 路由
+            config.MapHttpAttributeRoutes();
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
