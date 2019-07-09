@@ -20,10 +20,10 @@ namespace NBackend.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public object GetUsers()
+        [Route("api/users")]
+        public object GetUsers(object json)
         {
-            var ctx = new NBackendContext();
-            return UserBiz.ListToObj(ctx.Users);
+            return UserBiz.getUsersByNameOrId(json);
         }
 
         //登录
@@ -41,119 +41,54 @@ namespace NBackend.Controllers
             return UserBiz.Register(json);
         }
 
-        //获取对应名字用户的信息
-        //[HttpGet]
-        //[Route("api/users")]
-        //public object InfosByName(string name, string id)
-        //{
-        //    return new
-        //    {
-        //        name = name,
-        //        id = id
-        //    };
-        //}
-
-        // GET: api/Users/5
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> GetUser(int id)
+        //修改
+        [HttpPost]
+        [Route("api/users")]
+        public object UpdateInfo(object json)
         {
-            User user = await db.Users.FindAsync(id);
-            if (user == null)
+            //try
+            //{
+                var token = Request.Headers.Authorization.Parameter;
+            if(token == null)
             {
-                return NotFound();
+                return Helper.JsonConverter.Error(401, "你还没登录？");
             }
+            //}catch()
 
-            return Ok(user);
+            return UserBiz.UpdateInfo(token, json);
         }
 
-        // PUT: api/Users/5
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutUser(int id, User user)
+        //关注功能相关
+        [HttpGet]
+        [Route("api/followers")]
+        public object GetFollowers(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            return UserBiz.getFollowers(json);
         }
 
-        // POST: api/Users
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> PostUser(User user)
+        [HttpGet]
+        [Route("api/following")]
+        public object GetFollowing(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.Users.Add(user);
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (UserExists(user.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtRoute("DefaultApi", new { id = user.Id }, user);
+            return UserBiz.getFollowing(json);
         }
 
-        // DELETE: api/Users/5
-        [ResponseType(typeof(User))]
-        public async Task<IHttpActionResult> DeleteUser(int id)
+        [HttpPost]
+        [Route("api/following")]
+        public object PostFollowing(object json)
         {
-            User user = await db.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            db.Users.Remove(user);
-            await db.SaveChangesAsync();
-
-            return Ok(user);
+            return UserBiz.postFollow(token, json);
         }
 
-        protected override void Dispose(bool disposing)
+        [HttpDelete]
+        [Route("api/following")]
+        public object DeleteFollowing(object json)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
+            var token = Request.Headers.Authorization.Parameter;
+
+            return UserBiz.deleteFollow(token, json);
         }
 
         private bool UserExists(int id)

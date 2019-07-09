@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using NBackend.Models;
+using NBackend.Biz;
 
 namespace NBackend.Controllers
 {
@@ -17,7 +18,18 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
+        [HttpPost]
+        [Route("api/twitters")]
+        public object PostTwi(object json)
+        {
+            var token = Request.Headers.Authorization.Parameter;
+
+            return TwitterBiz.postTwi(token, json);
+        }
+
         // GET: api/Twitters
+        [HttpGet]
+        [Route("api/twitters")]
         public IQueryable<Twitter> GetTwitters()
         {
             return db.Twitters;

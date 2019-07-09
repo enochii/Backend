@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
-
+using System.Net.Http;
 
 namespace NBackend.Biz
 {
@@ -15,12 +15,66 @@ namespace NBackend.Biz
         public const string TEACHER_MANAGE = "teacher_manage";
         public const string STUDENT = "student";
 
-        public static object ListToObj(DbSet<User> users)
+        public static object UpdateInfo(string token, object json)
+        {
+            Dictionary<string, string> body = JsonConverter.Decode(json);
+
+            NBackendContext ctx = new NBackendContext();
+
+            int id = Helper.JwtManager.DecodeToken(token);
+
+            User user = getUserById(ctx, id);
+            if(user == null)
+            {
+                return JsonConverter.Error(400, "我也很绝望，没你这人");
+            }
+
+            var user_name = body["user_name"];
+            var department = body["department"];
+            var password = body["password"];
+            var phone_number = body["phone_number"];
+            var email = body["email"];
+            var avatar = body["avatar"];
+            var role = body["role"];
+
+            user.user_name = user_name;
+            user.department = department;
+            user.password = password;
+            user.phone_number = phone_number;
+            user.mail = email;
+            user.avatar = avatar;
+            user.role = role;
+
+            ctx.SaveChanges();
+
+            int following_num = user.following.Count();
+            int followers_num = user.followers.Count();
+
+            var data =
+             new
+             {
+                 user_id = user.Id,
+                 user_name = user.user_name,
+                 department = user.department,
+                 phone_number = user.phone_number,
+                 email = user.mail,
+                 avatar = user.avatar,
+                 role = user.role,
+                 
+                 following = following_num,
+                 follower = followers_num,
+             };
+
+            return JsonConverter.BuildResult(data);
+        }
+
+        public static object ListToObj(List<User> users)
         {
             //using (var ctx = new NBackendContext())
             {
                 var list = new List<object>();
 
+               
                 foreach(var user in users)
                 {
                     list.Add(new
@@ -48,7 +102,7 @@ namespace NBackend.Biz
 
             var user_id = int.Parse(body["user_id"]);
             var user_name = body["user_name"];
-            var department = body["password"];
+            var department = body["department"];
             var password = body["password"];
             var phone_number = body["phone_number"];
             var email = body["email"];
@@ -138,7 +192,7 @@ namespace NBackend.Biz
             int following_num = user.following.Count();
             int followers_num = user.followers.Count();
 
-            var token = Helper.JwtManager.GenerateToken(user_id.ToString());
+            var token = Helper.JwtManager.GenerateToken(user_id);
 
             var data = new
             {
@@ -158,25 +212,223 @@ namespace NBackend.Biz
 
         }
 
-        public static object GetUsersByNameOrId(object json)
+        public static object getUsersByNameOrId(object json)
         {
             var body = JsonConverter.Decode(json);
 
             var list = new List<object>();
-            if (body.ContainsKey("id"))
+            NBackendContext ctx = new NBackendContext();
+            if (body.ContainsKey("user_id"))
             {
+                int id = int.Parse(body["user_id"]);
 
+                var user = getUserById(ctx, id);
+                if(user == null)
+                {
+                    return JsonConverter.Error(400, "火星用户！");
+                }
+
+                int grade = -1;
+                string job_title = "";
+
+                if(!getGradeOrTitle(ctx, user,ref grade, ref job_title))
+                {
+                    return JsonConverter.Error(400, "这可咋办");
+                }
+
+                var data = new
+                {
+                    role = user.role,
+                    user_id = user.Id,
+                    user_name = user.user_name,
+                    department = user.department,
+                    phone_number = user.phone_number,
+                    email = user.mail,
+                    avatar = user.avatar,
+                    job_title = job_title,
+                    grade = grade,
+
+                };
+
+                return JsonConverter.BuildResult(data, 200, "ok");
+                
             }
-            else if (body.ContainsKey("name") || body["name"].Equals(""))
+            else if (body.ContainsKey("user_name") && !body["user_name"].Equals(""))
             {
+                string name = body["user_name"];
+                var q = ctx.Users.Where(_user => _user.user_name == name);
 
+
+                var _users = q.ToList();
+
+                return ListToObj(ctx, _users);
+                
             }
             else
             {
                 //无字段，暂时返回所有用户？
+                var data = ListToObj(ctx.Users.ToList());
             }
 
             return list;
+        }
+
+        private static object followHelper(bool followers, object json)
+        {
+            Dictionary<string, string> body = JsonConverter.Decode(json);
+            NBackendContext ctx = new NBackendContext();
+
+            int id = int.Parse(body["user_id"]);
+            User user = getUserById(ctx, id);
+
+            var _users = followers ? user.followers : user.following;
+            var users = _users.ToList();
+            
+            return ListToObj(ctx, users);
+        }
+
+        public static object getFollowers(object json)
+        {
+            return followHelper(true, json);
+        }
+
+        public static object getFollowing(object json)
+        {
+            return followHelper(false, json);
+        }
+
+        private static bool containsUser(List<User> users, User user)
+        {
+            foreach(var _user in users)
+            {
+                if(user.Id == _user.Id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static object postFollow(string token, object json)
+        {
+            Dictionary<string, string> body = JsonConverter.Decode(json);
+            NBackendContext ctx = new NBackendContext();
+
+            int following_id = int.Parse(body["user_id"]);
+            int user_id = Helper.JwtManager.DecodeToken(token);
+            User user = getUserById(ctx, user_id);
+            User following = getUserById(ctx, following_id);
+
+            if(containsUser(user.following.ToList(), following))
+            {
+                return Helper.JsonConverter.Error(400, "负负得正");
+            }
+            if (containsUser(following.followers.ToList(), user))
+            {
+                return Helper.JsonConverter.Error(400, "咋回事？你已经follow了？表不一致啊");
+            }
+
+            user.following.Add(following);
+            following.followers.Add(user);
+
+            ctx.SaveChanges();
+            return Helper.JsonConverter.BuildResult(null);
+        }
+
+        public static object deleteFollow(string token, object json)
+        {
+            Dictionary<string, string> body = JsonConverter.Decode(json);
+            NBackendContext ctx = new NBackendContext();
+
+            int following_id = int.Parse(body["user_id"]);
+            int user_id = Helper.JwtManager.DecodeToken(token);
+            User user = getUserById(ctx, user_id);
+            User following = getUserById(ctx, following_id);
+
+            if (!containsUser(user.following.ToList(), following))
+            {
+                return Helper.JsonConverter.Error(400, "你并没有follow");
+            }
+            if (!containsUser(following.followers.ToList(), user))
+            {
+                return Helper.JsonConverter.Error(400, "咋回事？你没follow？表不一致啊");
+            }
+            user.following.Remove(following);
+            following.followers.Remove(user);
+
+            ctx.SaveChanges();
+            return Helper.JsonConverter.BuildResult(null);
+        }
+
+        //通过id和context获取用户
+        public static User getUserById(NBackendContext ctx, int id)
+        {
+            var q = ctx.Users.Where(_user => _user.Id == id);
+
+            return q.Any() ? q.Single() : null;
+        }
+
+        //通过用户获取grade或者job_title
+        private static bool getGradeOrTitle(NBackendContext ctx, User user, ref int grade, ref string job_title)
+        {
+            //根据用户的类型去分发逻辑
+            if (user.role.Equals(STUDENT))
+            {
+                var q = ctx.Students.Where(_stu => _stu.StudentId == user.Id);
+                if (!q.Any())
+                {
+                    return false;
+                }
+                var stu = q.Single();
+                grade = stu.grade;
+            }
+            else
+            {
+                var q = ctx.Teachers.Where(_tea => _tea.TeacherId == user.Id);
+                if (!q.Any())
+                {
+                    return false;
+                }
+                var tea = q.Single();
+                job_title = tea.job_title;
+            }
+
+            return true;
+        }
+
+        private static object ListToObj(NBackendContext ctx, List<User> _users)
+        {
+            var users = new List<object>();
+
+            foreach (var user in _users)
+            {
+                int grade = -1;
+                string job_title = "";
+
+                if (!getGradeOrTitle(ctx, user, ref grade, ref job_title))
+                {
+                    return JsonConverter.Error(400, "这可咋办");
+                }
+
+                users.Add(new
+                {
+                    role = user.role,
+                    user_id = user.Id,
+                    user_name = user.user_name,
+                    department = user.department,
+                    phone_number = user.phone_number,
+                    email = user.mail,
+                    avatar = user.avatar,
+                    grade = grade,
+                    job_title = job_title,
+                });
+
+            }
+            var data = new
+            {
+                users = users,
+            };
+            return JsonConverter.BuildResult(data, 200, "ok");
         }
     }
 }
