@@ -9,7 +9,7 @@ namespace NBackend.Models
 {
     public class Course
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        
         [Key]
         public int CourseId { get; set; }
 

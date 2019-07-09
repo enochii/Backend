@@ -9,7 +9,7 @@ namespace NBackend.Models
 {
     public class Section
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Key, Column(Order = 1)]
         public int SecId { get; set; }
 

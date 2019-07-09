@@ -71,27 +71,29 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("api/questions")]
-        public object postQuestion(object json)
+        public object PostQuestion(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
 
-            return ExamBiz.postExam(token, json);
+            return ExamBiz.postQuestion(token, json);
         }
         //删除一个题目
         [AllowAnonymous]
         [HttpDelete]
         [Route("api/questions")]
-        public object deleteQuestion(object json)
+        public object DeleteQuestion(object json)
         {
-
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.putQuestion(token, json);
         }
         //修改一个题目
         [AllowAnonymous]
         [HttpPut]
         [Route("api/questions")]
-        public object putQuestion(object json)
+        public object PutQuestion(object json)
         {
-
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.deleteQuestion(token, json);
         }
 
         protected override void Dispose(bool disposing)

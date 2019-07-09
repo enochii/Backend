@@ -38,6 +38,6 @@ namespace NBackend.Models
        // 第几节课
         public int timeId { get; set; }
         //出席状态，是否出席
-        public bool status { get; set; }
+        public int status { get; set; }
     }
 }

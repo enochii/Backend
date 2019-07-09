@@ -9,7 +9,7 @@ namespace NBackend.Models
 {
     public class Disscussion
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Key]
         public int DisscussionId { get; set; }
 
