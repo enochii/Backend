@@ -13,44 +13,44 @@ using NBackend.Models;
 
 namespace NBackend.Controllers
 {
-    public class MultiSectionsTimesController : ApiController
+    public class MultiSectionTimesController : ApiController
     {
         private NBackendContext db = new NBackendContext();
 
-        // GET: api/MultiSectionsTimes
-        public IQueryable<MultiSectionsTime> GetMultiSectionsTimes()
+        // GET: api/MultiSectionTimes
+        public IQueryable<MultiSectionTimes> GetMultiSectionTimes()
         {
-            return db.MultiSectionsTimes;
+            return db.MultiSectionTimes;
         }
 
-        // GET: api/MultiSectionsTimes/5
-        [ResponseType(typeof(MultiSectionsTime))]
-        public async Task<IHttpActionResult> GetMultiSectionsTime(int id)
+        // GET: api/MultiSectionTimes/5
+        [ResponseType(typeof(MultiSectionTimes))]
+        public async Task<IHttpActionResult> GetMultiSectionTimes(int id)
         {
-            MultiSectionsTime multiSectionsTime = await db.MultiSectionsTimes.FindAsync(id);
-            if (multiSectionsTime == null)
+            MultiSectionTimes multiSectionTimes = await db.MultiSectionTimes.FindAsync(id);
+            if (multiSectionTimes == null)
             {
                 return NotFound();
             }
 
-            return Ok(multiSectionsTime);
+            return Ok(multiSectionTimes);
         }
 
-        // PUT: api/MultiSectionsTimes/5
+        // PUT: api/MultiSectionTimes/5
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutMultiSectionsTime(int id, MultiSectionsTime multiSectionsTime)
+        public async Task<IHttpActionResult> PutMultiSectionTimes(int id, MultiSectionTimes multiSectionTimes)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != multiSectionsTime.SecId)
+            if (id != multiSectionTimes.SecId)
             {
                 return BadRequest();
             }
 
-            db.Entry(multiSectionsTime).State = EntityState.Modified;
+            db.Entry(multiSectionTimes).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +58,7 @@ namespace NBackend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MultiSectionsTimeExists(id))
+                if (!MultiSectionTimesExists(id))
                 {
                     return NotFound();
                 }
@@ -71,16 +71,16 @@ namespace NBackend.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/MultiSectionsTimes
-        [ResponseType(typeof(MultiSectionsTime))]
-        public async Task<IHttpActionResult> PostMultiSectionsTime(MultiSectionsTime multiSectionsTime)
+        // POST: api/MultiSectionTimes
+        [ResponseType(typeof(MultiSectionTimes))]
+        public async Task<IHttpActionResult> PostMultiSectionTimes(MultiSectionTimes multiSectionTimes)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.MultiSectionsTimes.Add(multiSectionsTime);
+            db.MultiSectionTimes.Add(multiSectionTimes);
 
             try
             {
@@ -88,7 +88,7 @@ namespace NBackend.Controllers
             }
             catch (DbUpdateException)
             {
-                if (MultiSectionsTimeExists(multiSectionsTime.SecId))
+                if (MultiSectionTimesExists(multiSectionTimes.SecId))
                 {
                     return Conflict();
                 }
@@ -98,23 +98,23 @@ namespace NBackend.Controllers
                 }
             }
 
-            return CreatedAtRoute("DefaultApi", new { id = multiSectionsTime.SecId }, multiSectionsTime);
+            return CreatedAtRoute("DefaultApi", new { id = multiSectionTimes.SecId }, multiSectionTimes);
         }
 
-        // DELETE: api/MultiSectionsTimes/5
-        [ResponseType(typeof(MultiSectionsTime))]
-        public async Task<IHttpActionResult> DeleteMultiSectionsTime(int id)
+        // DELETE: api/MultiSectionTimes/5
+        [ResponseType(typeof(MultiSectionTimes))]
+        public async Task<IHttpActionResult> DeleteMultiSectionTimes(int id)
         {
-            MultiSectionsTime multiSectionsTime = await db.MultiSectionsTimes.FindAsync(id);
-            if (multiSectionsTime == null)
+            MultiSectionTimes multiSectionTimes = await db.MultiSectionTimes.FindAsync(id);
+            if (multiSectionTimes == null)
             {
                 return NotFound();
             }
 
-            db.MultiSectionsTimes.Remove(multiSectionsTime);
+            db.MultiSectionTimes.Remove(multiSectionTimes);
             await db.SaveChangesAsync();
 
-            return Ok(multiSectionsTime);
+            return Ok(multiSectionTimes);
         }
 
         protected override void Dispose(bool disposing)
@@ -126,9 +126,9 @@ namespace NBackend.Controllers
             base.Dispose(disposing);
         }
 
-        private bool MultiSectionsTimeExists(int id)
+        private bool MultiSectionTimesExists(int id)
         {
-            return db.MultiSectionsTimes.Count(e => e.SecId == id) > 0;
+            return db.MultiSectionTimes.Count(e => e.SecId == id) > 0;
         }
     }
 }

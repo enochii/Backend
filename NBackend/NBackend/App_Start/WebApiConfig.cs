@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace NBackend
 {
@@ -9,11 +10,9 @@ namespace NBackend
     {
         public static void Register(HttpConfiguration config)
         {
-            // Web API 配置和服务
-            GlobalConfiguration.Configuration.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
-
-            // Web API 路由
-            config.MapHttpAttributeRoutes();
+            // New code
+            //var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors();
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
