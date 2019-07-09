@@ -7,28 +7,28 @@ using System.Web;
 
 namespace NBackend.Models
 {
-    public class MultiSectionsTime
+    public class MultiSectionTimes
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Key, Column(Order = 1)]
+        [Key, Column(Order = 1), ForeignKey("Section")]
         public int SecId { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Key, Column(Order = 2), ForeignKey("Course")]
+        [Key, Column(Order = 2), ForeignKey("Section")]
         public int courseId { get; set; }
         public virtual Course Course { get; set; }
 
-        [Key, Column(Order = 3)]
+        [Key, Column(Order = 3), ForeignKey("Section")]
         [MaxLength(20)]
         public string semester { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Key, Column(Order = 4)]
+        [Key, Column(Order = 4), ForeignKey("Section")]
         public int year { get; set; }
 
         public Section Section { get; set; }
 
-        [Required, ForeignKey("SectionTime")]
+        [Key, Column(Order = 5), ForeignKey("SectionTime")]
         public int section_timeId { get; set; }
         public virtual SectionTime SectionTime { get; set; }
 
