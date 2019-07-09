@@ -17,6 +17,13 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
+        [HttpGet]
+        [Route("api/class_work")]
+        public object GetClassWork(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.BroadcastBiz.GetAllHomework(json);
+        }
         // GET: api/Broadcasts
         public IQueryable<Broadcast> GetBroadcasts()
         {

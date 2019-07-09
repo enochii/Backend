@@ -18,9 +18,9 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/CourseWares
-        public IQueryable<CourseWare> GetCourseWares()
+        public object GetCourseWares(object json)
         {
-            return db.CourseWares;
+            return Biz.CoursewareBiz.GetAllCoursewares(json);
         }
 
         // GET: api/CourseWares/5

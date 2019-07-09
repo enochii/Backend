@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using NBackend.Models;
+using NBackend.Biz;
 
 namespace NBackend.Controllers
 {
@@ -17,10 +18,76 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
-        // GET: api/Sections
-        public IQueryable<Section> GetSections()
+        [HttpGet]
+        [Route("api/total_classes")]
+        public object GetSections()
         {
-            return db.Sections;
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetAllClasses();
+        }
+
+        [HttpGet]
+        [Route("api/one_class")]
+        public object GetOneSection(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetOneClass(json);
+        }
+
+        [HttpGet]
+        [Route("api/part_classes")]
+        public object GetPartSections(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetPartClass(json);
+        }
+
+        [HttpGet]
+        [Route("api/waiting_classes")]
+        public object GetWaitingSections(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetWaitingClass(json);
+        }
+
+        [HttpGet]
+        [Route("api/waiting_students")]
+        public object GetWaitingStudents(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetWaitingStudents(json);
+        }
+
+        [HttpGet]
+        [Route("api/class_details")]
+        public object GetClassDetails(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetOneClassDetails(json);
+        }
+
+        [HttpPost]
+        [Route("api/student_class")]
+        public object PostStudentClass(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.JoinClass(json);
+        }
+
+        [HttpPost]
+        [Route("api/class")]
+        public object PostSection(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.CreateClass(json);
+        }
+
+        [HttpPut]
+        [Route("api/Permission")]
+        public object PutApplication(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.PermitApplication(json);
         }
 
         // GET: api/Sections/5
