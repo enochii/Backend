@@ -19,8 +19,8 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var discussions = context.Disscussions.Where(a => a.courseId == course_id
-                                                            && a.semester == semester && a.year == year);
+                var discussions = context.Disscussions.Where(a => a.courseId == course_id && a.secId == sec_id
+                                                            && a.semester == semester && a.year == year && a.comments != null);
                 var list = new List<object>();
 
                 foreach (var a_discussion in discussions)
@@ -30,17 +30,17 @@ namespace NBackend.Biz
                     list.Add(new
                     {
                         discussion_id = a_discussion.DisscussionId,
-                        user_id = user_info.id,
+                        user_id = user_info.Id,
                         user_name = user_info.user_name,
                         role = user_info.role,
                         content = a_discussion.content,
                         time = a_discussion.time,
-                        question_id = a_discussion.Disscussion_DisscussionId
+                        //question_id = a_discussion.Disscussion_DisscussionId
                     });
                 }
                 var data = new
                 {
-                    classes = list
+                    questions = list
                 };
 
                 return Helper.JsonConverter.BuildResult(data);
@@ -55,19 +55,19 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var the_discussion = context.Disscussions.Single(a => a.DisscussionId==discussion_id);
-                var replys = context.Disscussions.Where(a => a.Disscussion_DicussionId == the_discussion.DisscussionId);
+                var the_discussion = context.Disscussions.Single(a => a.DisscussionId == discussion_id);
+                var replys = the_discussion.comments;
                 var list = new List<object>();
 
                 foreach (var each_reply in replys)
                 {
                     list.Add(new
                     {
-                        discussion_id=each_reply.DiscussionId,
+                        discussion_id = each_reply.DisscussionId,
                         user_id = each_reply.userId,
                         content = each_reply.content,
                         time = each_reply.time,
-                        question_id = each_reply.Disscussion_DisscussionId
+                        question_id = the_discussion.DisscussionId
                     });
                 }
 
@@ -98,22 +98,37 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                context.Disscussions.Add(new Disscussion
+                if (question_id == 0)
                 {
-                    secId = sec_id,
-                    courseId = course_id,
-                    semester = semester,
-                    year = year,
-                    userId = user_id,
-                    content = content,
-                    time = time,
-                    Disscussion_DisscussionId = question_id
-                })
+                    context.Disscussions.Add(new Disscussion
+                    {
+                        secId = sec_id,
+                        courseId = course_id,
+                        semester = semester,
+                        year = year,
+                        userId = user_id,
+                        content = content,
+                        time = time,
+                    });
+
+                }
+                else
+                {
+                    context.Disscussions.Single(a => a.DisscussionId == question_id).comments.Add(new Disscussion
+                    {
+                        secId = sec_id,
+                        courseId = course_id,
+                        semester = semester,
+                        year = year,
+                        userId = user_id,
+                        content = content,
+                        time = time,
+                        comments = null
+                    });
+                }
                 context.SaveChanges();
                 return Helper.JsonConverter.BuildResult(null);
             }
         }
-
     }
-
 }

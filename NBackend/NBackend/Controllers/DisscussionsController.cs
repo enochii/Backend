@@ -18,9 +18,27 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Disscussions
-        public IQueryable<Disscussion> GetDisscussions()
+        [HttpGet]
+        [Route("api/discussions")]
+        public object GetDisscussions(object json)
         {
-            return db.Disscussions;
+            return Biz.DiscussionBiz.GetDiscussions(json);
+        }
+
+        [HttpGet]
+        [Route("api/one_discussion")]
+        public object GetOneDiscussion(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.DiscussionBiz.GetOneDiscussion(json);
+        }
+
+        [HttpPost]
+        [Route("api/discussion")]
+        public object PostDiscussion(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.DiscussionBiz.PostDiscussion(json);
         }
 
         // GET: api/Disscussions/5
