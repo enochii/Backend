@@ -50,7 +50,7 @@ namespace NBackend.Biz
                         //year = a_class.year,
                         building = a_class.building,
                         room_number = a_class.room_numer,
-                        section_time_ID = a_class.section_timeId,
+                        //section_time_ID = a_class.section_timeId,
                         avatar = the_teacher.avatar,
                         user_name = the_teacher.teacher_name,
                         course_name = the_course.course_name,
@@ -106,7 +106,7 @@ namespace NBackend.Biz
                 {
                     building = the_class.building,
                     room_number = the_class.room_numer,
-                    section_time_id = the_class.section_timeId,
+                    //section_time_id = the_class.section_timeId,
                     avatar = the_teacher.avatar,
                     user_name = the_teacher.teacher_name,
                     course_name = the_course.course_name,
@@ -324,7 +324,7 @@ namespace NBackend.Biz
                 {
                     building = the_class.building,
                     room_number = the_class.room_numer,
-                    section_time_id = the_class.section_timeId,
+                    //section_time_id = the_class.section_timeId,
                     students = list
                 };
 
@@ -394,7 +394,7 @@ namespace NBackend.Biz
                     year = year,
                     building = building,
                     room_numer = room_number,
-                    section_timeId = section_time_id,
+                    //section_timeId = section_time_id,
                     avatar = avatar
                 });
                 context.SaveChanges();

@@ -19,6 +19,7 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Users
+        [AllowAnonymous]
         [HttpGet]
         [Route("api/users")]
         public object GetUsers(object json)
@@ -27,6 +28,7 @@ namespace NBackend.Controllers
         }
 
         //登录
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/login")]
         public object Login(object json)
@@ -34,6 +36,7 @@ namespace NBackend.Controllers
             return UserBiz.Login(json);
         }
         //注册
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/register")]
         public object Register(object json)
@@ -42,6 +45,7 @@ namespace NBackend.Controllers
         }
 
         //修改
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/users")]
         public object UpdateInfo(object json)
@@ -59,6 +63,7 @@ namespace NBackend.Controllers
         }
 
         //关注功能相关
+        [AllowAnonymous]
         [HttpGet]
         [Route("api/followers")]
         public object GetFollowers(object json)
@@ -67,12 +72,14 @@ namespace NBackend.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         [Route("api/following")]
         public object GetFollowing(object json)
         {
             return UserBiz.getFollowing(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/following")]
         public object PostFollowing(object json)
@@ -82,6 +89,7 @@ namespace NBackend.Controllers
             return UserBiz.postFollow(token, json);
         }
 
+        [AllowAnonymous]
         [HttpDelete]
         [Route("api/following")]
         public object DeleteFollowing(object json)

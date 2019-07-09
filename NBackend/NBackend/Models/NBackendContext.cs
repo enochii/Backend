@@ -64,5 +64,7 @@ namespace NBackend.Models
         public System.Data.Entity.DbSet<NBackend.Models.ExamQuestion> ExamQuestions { get; set; }
 
         public System.Data.Entity.DbSet<NBackend.Models.TakesExam> TakesExams { get; set; }
+
+        public System.Data.Entity.DbSet<NBackend.Models.MultiSectionsTime> MultiSectionsTimes { get; set; }
     }
 }
