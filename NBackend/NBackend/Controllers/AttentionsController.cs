@@ -10,12 +10,49 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using NBackend.Models;
+using NBackend.Biz;
 
 namespace NBackend.Controllers
 {
     public class AttentionsController : ApiController
     {
         private NBackendContext db = new NBackendContext();
+
+        [HttpGet]
+        [Route("api/attendance")]
+        public object GetAttendanceRecords(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.AttendanceBiz.GetAttendanceRecords(json);
+        }
+
+        [HttpPost]
+        [Route("api/attendance")]
+        public object PostAttendanceRecords(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.AttendanceBiz.PostAttendance(json);
+        }
+
+        [HttpPut]
+        [Route("api/attendance")]
+        public object PutAttendanceRecords(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.AttendanceBiz.EditAttendanceRecords(json);
+        }
 
         // GET: api/Attentions
         public IQueryable<Attention> GetAttentions()

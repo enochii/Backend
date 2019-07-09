@@ -37,7 +37,11 @@ namespace NBackend.Controllers
         [Route("api/discussion")]
         public object PostDiscussion(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.DiscussionBiz.PostDiscussion(json);
         }
 

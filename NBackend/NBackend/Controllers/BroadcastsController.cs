@@ -21,7 +21,11 @@ namespace NBackend.Controllers
         [Route("api/class_work")]
         public object GetClassWork(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.BroadcastBiz.GetAllHomework(json);
         }
         // GET: api/Broadcasts

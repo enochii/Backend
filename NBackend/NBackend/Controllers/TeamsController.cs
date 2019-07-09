@@ -10,12 +10,69 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using NBackend.Models;
+using NBackend.Biz;
 
 namespace NBackend.Controllers
 {
     public class TeamsController : ApiController
     {
         private NBackendContext db = new NBackendContext();
+
+        [HttpGet]
+        [Route("api/teams")]
+        public object GetTeams(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.TeamBiz.GetTeams(json);
+        }
+
+        [HttpGet]
+        [Route("api/part_teams")]
+        public object GetPartTeams(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.TeamBiz.GetTeamsByKeyWords(json);
+        }
+
+        [HttpGet]
+        [Route("api/its_teams")]
+        public object GetItsTeams(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.TeamBiz.GetItsTeams(json);
+        }
+
+        [HttpPost]
+        [Route("api/teams")]
+        public object PostTeams(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.TeamBiz.PostTeam(json);
+        }
+
+        [HttpPost]
+        [Route("api/teams_attendance")]
+        public object PostTeamsAttendance(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.TeamBiz.PostTeamAttendance(json);
+        }
 
         // GET: api/Teams
         public IQueryable<Team> GetTeams()

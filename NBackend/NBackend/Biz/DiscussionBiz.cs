@@ -65,6 +65,7 @@ namespace NBackend.Biz
                     {
                         discussion_id = each_reply.DisscussionId,
                         user_id = each_reply.userId,
+                        user_name = context.Users.Single(a => a.Id == each_reply.userId),
                         content = each_reply.content,
                         time = each_reply.time,
                         question_id = the_discussion.DisscussionId
@@ -75,6 +76,7 @@ namespace NBackend.Biz
                 {
                     discussion_id = the_discussion.DisscussionId,
                     user_id = the_discussion.userId,
+                    user_name = context.Users.Single(a=>a.Id==the_discussion.userId),
                     content = the_discussion.content,
                     time = the_discussion.time,
                     replys = list

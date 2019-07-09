@@ -11,6 +11,42 @@ namespace NBackend.Biz
 {
     public class ClassBiz
     {
+        public static object get_time_info(int sec_id, int course_id, string semester, int year)
+        {
+            using (var context = new NBackendContext())
+            {
+                var time_info = (from section in context.Sections
+                                 join multiSectionTime in context.MultiSectionsTimes on new { section.SecId, section.courseId, section.semester, section.year }
+                                                                                    equals new { multiSectionTime.SecId, multiSectionTime.courseId, multiSectionTime.semester, multiSectionTime.year }
+                                 join sectionTime in context.SectionTimes on multiSectionTime.section_timeId equals sectionTime.SectionTimeId
+                                 where section.SecId == sec_id && section.courseId == course_id && section.semester == semester && section.year == year
+                                 select new
+                                 {
+                                     year = section.year,
+                                     semester = section.semester,
+                                     course_id = section.courseId,
+                                     sec_id = section.SecId,
+                                     day = multiSectionTime.day,
+                                     single_or_double = multiSectionTime.single_or_double,
+                                     start_section = sectionTime.start_section,
+                                     length = sectionTime.length
+                                 });
+                var list = new List<object>();
+                foreach (var each_time_info in time_info)
+                {
+                    list.Add(new
+                    {
+                        day = each_time_info.day,
+                        single_or_double = each_time_info.single_or_double,
+                        start_section = each_time_info.start_section,
+                        length = each_time_info.length
+                    });
+                }
+                return list;
+
+            }
+        }
+
         public static object GetAllClasses()
         {
             using (var context = new NBackendContext())
@@ -44,13 +80,13 @@ namespace NBackend.Biz
 
                     list.Add(new
                     {
-                        //sec_ID = a_class.SecId,
-                        //course_ID = a_class.courseId,
-                        //semester = a_class.semester,
-                        //year = a_class.year,
+                        sec_ID = a_class.SecId,
+                        course_ID = a_class.courseId,
+                        semester = a_class.semester,
+                        year = a_class.year,
                         building = a_class.building,
                         room_number = a_class.room_numer,
-                        //section_time_ID = a_class.section_timeId,
+                        time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
                         avatar = the_teacher.avatar,
                         user_name = the_teacher.teacher_name,
                         course_name = the_course.course_name,
@@ -106,7 +142,7 @@ namespace NBackend.Biz
                 {
                     building = the_class.building,
                     room_number = the_class.room_numer,
-                    //section_time_id = the_class.section_timeId,
+                    time_slots = get_time_info(the_class.SecId, the_class.courseId, the_class.semester, the_class.year),
                     avatar = the_teacher.avatar,
                     user_name = the_teacher.teacher_name,
                     course_name = the_course.course_name,
@@ -118,20 +154,20 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetPartClass(object json)
+        public static object GetPartClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
             var year = int.Parse(body["year"]);
             var semester = body["semester"];
-            var student_id = int.Parse(body["student_id"]);
+            var student_id = Helper.JwtManager.DecodeToken(token);
 
             using (var context = new NBackendContext())
             {
                 var some_classes = (from each_class in context.Sections
-                                    join each_taking in context.Takes 
+                                    join each_taking in context.Takes
                                         on new { each_class.courseId, each_class.semester, each_class.year }
                                         equals new { each_taking.courseId, each_taking.semester, each_taking.year }
-                                    where each_class.SecId==each_taking.secId&&each_class.semester==semester&&each_class.year==year&&each_taking.StudentId==student_id
+                                    where each_class.SecId == each_taking.secId && each_class.semester == semester && each_class.year == year && each_taking.StudentId == student_id
                                     select new
                                     {
                                         SecId = each_class.SecId,
@@ -172,6 +208,7 @@ namespace NBackend.Biz
                         //building = a_class.building,
                         //room_number = a_class.room_numer,
                         //section_time_id = a_class.section_timeId,
+                        time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
                         avatar = the_teacher.avatar,
                         user_name = the_teacher.teacher_name,
                         course_name = the_course.course_name,
@@ -188,10 +225,10 @@ namespace NBackend.Biz
             }
         }
 
-        public static object GetWaitingClass(object json)
+        public static object GetWaitingClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
-            var student_id = int.Parse(body["student_id"]);
+            var student_id = Helper.JwtManager.DecodeToken(token);
 
             using (var context = new NBackendContext())
             {
@@ -236,6 +273,7 @@ namespace NBackend.Biz
                         //building = each_class.building,
                         //room_number = each_class.room_numer,
                         //section_time_id = each_class.section_timeId
+                        time_slots = get_time_info(a_class.secId, a_class.courseId, a_class.semester, a_class.year),
                         avatar = the_teacher.avatar,
                         user_name = the_teacher.teacher_name,
                         course_name = the_course.course_name,
@@ -271,8 +309,8 @@ namespace NBackend.Biz
                 }
 
                 var students_info = (from student in waiting_students
-                                    join info in context.Users on student.StudentId equals info.Id
-                                    select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar }).ToArray();
+                                     join info in context.Users on student.StudentId equals info.Id
+                                     select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar }).ToArray();
 
                 /*var list = new List<object>();
 
@@ -310,11 +348,12 @@ namespace NBackend.Biz
                 var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                        && a.semester == semester && a.year == year);
                 var list = new List<object>();
-                foreach(var a_student in students)
+                foreach (var a_student in students)
                 {
                     var user_info = context.Users.Single(a => a.Id == a_student.StudentId);
                     var student_info = context.Students.Single(a => a.StudentId == a_student.StudentId);
-                    list.Add(new {
+                    list.Add(new
+                    {
                         student_id = a_student.StudentId,
                         student_name = user_info.user_name,
                         student_grade = student_info.grade
@@ -325,6 +364,7 @@ namespace NBackend.Biz
                     building = the_class.building,
                     room_number = the_class.room_numer,
                     //section_time_id = the_class.section_timeId,
+                    time_slots = get_time_info(the_class.SecId, the_class.courseId, the_class.semester, the_class.year),
                     students = list
                 };
 
@@ -332,14 +372,14 @@ namespace NBackend.Biz
             }
         }
 
-        public static object JoinClass(object json)
+        public static object JoinClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
             var year = int.Parse(body["year"]);
-            var student_id = int.Parse(body["user_id"]);
+            var student_id = Helper.JwtManager.DecodeToken(token);
 
             using (var context = new NBackendContext())
             {
@@ -380,8 +420,11 @@ namespace NBackend.Biz
             var year = int.Parse(body["year"]);
             var building = body["building"];
             var room_number = body["room_number"];
-            var section_time_id = int.Parse(body["section_time_id"]);
+            //var section_time_id = int.Parse(body["section_time_id"]);
             var avatar = body["avatar"];
+            var start_week = int.Parse(body["start_week"]);
+            var end_week = int.Parse(body["end_week"]);
+            var sec_id = int.Parse(body["sec_id"]);
 
             using (var context = new NBackendContext())
             {
@@ -389,17 +432,20 @@ namespace NBackend.Biz
                                                             && a.semester == semester && a.year == year);
                 context.Sections.Add(new Section
                 {
+                    SecId = sec_id,
                     courseId = course_id,
                     semester = semester,
                     year = year,
                     building = building,
                     room_numer = room_number,
                     //section_timeId = section_time_id,
-                    avatar = avatar
+                    avatar = avatar,
+                    start_week = start_week,
+                    end_week = end_week,
                 });
                 context.SaveChanges();
                 var a_class = context.Sections.Where(a => a.courseId == course_id
-                                                        && a.semester == semester && a.year == year).OrderByDescending(a=>a.SecId);
+                                                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
                 var the_class = a_class.First();
                 return Helper.JsonConverter.BuildResult(new { the_class.SecId });
             }
