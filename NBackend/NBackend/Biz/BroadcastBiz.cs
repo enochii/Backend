@@ -10,6 +10,7 @@ namespace NBackend.Biz
 {
     public class BroadcastBiz
     {
+        //获取某个班的作业
         public static object GetAllHomework(object json)
         {
             var body = Helper.JsonConverter.Decode(json);

@@ -21,31 +21,31 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
-            context.Users.AddOrUpdate(
-              p => p.user_name,
-              new Models.User
-              {
-                  Id = 000000,
-                  user_name = "Ԭ����",
-                  department = "����ѧԺ",
-                  password = "123456",
-                  phone_number = "13112525575",
-                  mail = "144@11.com",
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                  role = "teacher"
-              },
-            new Models.User
-            {
-                Id = 1651162,
-                user_name = "ʩ�̺�",
-                department = "����ѧԺ",
-                password = "123456",
-                phone_number = "13112525575",
-                mail = "144@11.com",
-                avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                role = "teacher"
-            }
-            );
+            //context.Users.AddOrUpdate(
+            //  p => p.user_name,
+            //  new Models.User
+            //  {
+            //      Id = 000000,
+            //      user_name = "Ԭ����",
+            //      department = "����ѧԺ",
+            //      password = "123456",
+            //      phone_number = "13112525575",
+            //      mail = "144@11.com",
+            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+            //      role = "teacher"
+            //  },
+            //new Models.User
+            //{
+            //    Id = 1651162,
+            //    user_name = "ʩ�̺�",
+            //    department = "����ѧԺ",
+            //    password = "123456",
+            //    phone_number = "13112525575",
+            //    mail = "144@11.com",
+            //    avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+            //    role = "teacher"
+            //}
+            //);
             //context.Courses.AddOrUpdate(
             //  p => p.course_name,
             //  new Models.Course
@@ -140,25 +140,27 @@ namespace NBackend.Migrations
             //  }
             //);
 
-            //context.Teaches.AddOrUpdate(
-            //  p => p.TeacherId,
-            //  new Models.Teach
-            //  {
-            //      TeacherId=000000,
-            //      SecId = 1,
-            //      courseId = 000000,
-            //      semester = "Spring",
-            //      year = 2019,
-            //  },
-            //  new Models.Teach
-            //  {
-            //      TeacherId = 000001,
-            //      SecId = 1,
-            //      courseId = 000001,
-            //      semester = "Spring",
-            //      year = 2019,
-            //  }
-            //);
+            context.Teams.AddOrUpdate(
+              p => p.TeamId,
+              new Models.Team
+              {
+                  //TeamId = 1,
+                  secId = 1,
+                  courseId = 2,
+                  semester = "Spring",
+                  year = 2019,
+                  team_name = "abcd"
+              },
+             new Models.Team
+             {
+                 //TeamId = 2,
+                 secId = 1,
+                 courseId = 2,
+                 semester = "Spring",
+                 year = 2019,
+                 team_name = "abcd"
+             }
+            );
 
             //context.Discussions.AddOrUpdate(
             //  p => p.secId,
@@ -170,7 +172,7 @@ namespace NBackend.Migrations
             //      year = 2019,
 
             //      userId = 1753127,
-            //      content="����̫����",
+            //      content = "hhh",
             //      time = "1997.11.22 12:01"
 
             //      //scope="������",

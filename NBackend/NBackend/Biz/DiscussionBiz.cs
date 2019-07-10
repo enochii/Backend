@@ -5,6 +5,8 @@ using System.Web;
 using NBackend.Helper;
 using NBackend.Models;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
+
 namespace NBackend.Biz
 {
     public class DiscussionBiz
@@ -26,23 +28,26 @@ namespace NBackend.Biz
                 }
 
                 var discussions = context.Disscussions.Where(a => a.courseId == course_id && a.secId == sec_id
-                                                            && a.semester == semester && a.year == year && a.comments != null);
+                                                            && a.semester == semester && a.year == year && a.comments.ToList()==null);
                 var list = new List<object>();
 
-                foreach (var a_discussion in discussions)
+                if (discussions.Any())
                 {
-                    var user_info = context.Users.Single(a => a.Id == a_discussion.userId);
-
-                    list.Add(new
+                    foreach (var a_discussion in discussions)
                     {
-                        discussion_id = a_discussion.DisscussionId,
-                        user_id = user_info.Id,
-                        user_name = user_info.user_name,
-                        role = user_info.role,
-                        content = a_discussion.content,
-                        time = a_discussion.time,
-                        //question_id = a_discussion.Disscussion_DisscussionId
-                    });
+                        var user_info = context.Users.Single(a => a.Id == a_discussion.userId);
+
+                        list.Add(new
+                        {
+                            discussion_id = a_discussion.DisscussionId,
+                            user_id = user_info.Id,
+                            user_name = user_info.user_name,
+                            role = user_info.role,
+                            content = a_discussion.content,
+                            time = a_discussion.time,
+                            //question_id = a_discussion.Disscussion_DisscussionId
+                        });
+                    }
                 }
                 var data = new
                 {
@@ -70,25 +75,28 @@ namespace NBackend.Biz
                 var replys = the_discussion.comments;
                 var list = new List<object>();
 
-                foreach (var each_reply in replys)
+                if (replys.Any())
                 {
-                    list.Add(new
+                    foreach (var each_reply in replys)
                     {
-                        discussion_id = each_reply.DisscussionId,
-                        user_id = each_reply.userId,
-                        user_name = context.Users.Single(a => a.Id == each_reply.userId).user_name,
-                        role = context.Users.Single(a => a.Id == each_reply.userId).role,
-                        content = each_reply.content,
-                        time = each_reply.time,
-                        question_id = the_discussion.DisscussionId
-                    });
+                        list.Add(new
+                        {
+                            discussion_id = each_reply.DisscussionId,
+                            user_id = each_reply.userId,
+                            user_name = context.Users.Single(a => a.Id == each_reply.userId).user_name,
+                            role = context.Users.Single(a => a.Id == each_reply.userId).role,
+                            content = each_reply.content,
+                            time = each_reply.time,
+                            question_id = the_discussion.DisscussionId
+                        });
+                    }
                 }
 
                 var data = new
                 {
                     discussion_id = the_discussion.DisscussionId,
                     user_id = the_discussion.userId,
-                    user_name = context.Users.Single(a=>a.Id==the_discussion.userId),
+                    user_name = context.Users.Single(a => a.Id == the_discussion.userId),
                     role = context.Users.Single(a => a.Id == the_discussion.userId).role,
                     content = the_discussion.content,
                     time = the_discussion.time,
@@ -120,9 +128,10 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "这个人有问题");
                 }
 
+                Disscussion new_discussion = new Disscussion();
                 if (question_id == 0)
                 {
-                    context.Disscussions.Add(new Disscussion
+                    new_discussion = new Disscussion
                     {
                         secId = sec_id,
                         courseId = course_id,
@@ -131,8 +140,12 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
+                        //comments = null,
                         //DisscussionId = discussion_id
-                    });
+                    };
+
+                    //DisscussionId = discussion_id
+                    context.Disscussions.Add(new_discussion);
 
                 }
                 else
@@ -143,7 +156,7 @@ namespace NBackend.Biz
                         return Helper.JsonConverter.Error(400, "这个问题不对啊");
                     }
 
-                    any_discussion.Single().comments.Add(new Disscussion
+                    new_discussion = new Disscussion
                     {
                         secId = sec_id,
                         courseId = course_id,
@@ -154,10 +167,24 @@ namespace NBackend.Biz
                         time = time,
                         comments = null,
                         //DisscussionId = discussion_id
-                    });
+                    };
+                    any_discussion.Single().comments.Add(new_discussion);
                 }
-                context.SaveChanges();
-                return Helper.JsonConverter.BuildResult(null);
+
+                try
+                {
+                    // 写数据库 
+                    context.SaveChanges();
+                }
+                catch (DbEntityValidationException dbEx)
+                {
+
+                }
+                
+                return Helper.JsonConverter.BuildResult(new
+                {
+                    discussion_id = new_discussion.DisscussionId
+                });
             }
         }
     }

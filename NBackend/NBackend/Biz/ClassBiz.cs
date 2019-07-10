@@ -12,6 +12,7 @@ namespace NBackend.Biz
 {
     public class ClassBiz
     {
+        //获取某个班级的开课时段
         public static object get_time_info(int sec_id, int course_id, string semester, int year)
         {
             using (var context = new NBackendContext())
@@ -78,7 +79,7 @@ namespace NBackend.Biz
                                      select new
                                      {
                                          teacher_name = each_user.user_name,
-                                         avatar = each_user.avatar
+                                         avatar = each_class.avatar
                                      });
                     var the_course = a_course.Single();
                     var the_teacher = a_teacher.Single();
@@ -86,8 +87,8 @@ namespace NBackend.Biz
 
                     list.Add(new
                     {
-                        sec_ID = a_class.SecId,
-                        course_ID = a_class.courseId,
+                        sec_id = a_class.SecId,
+                        course_id = a_class.courseId,
                         semester = a_class.semester,
                         year = a_class.year,
                         building = a_class.building,
@@ -109,7 +110,7 @@ namespace NBackend.Biz
             }
         }
 
-        //获取一个特定班级的信息
+        //学生获取一个特定班级的信息，包括学生人数
         public static object GetOneClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -143,7 +144,7 @@ namespace NBackend.Biz
                                  select new
                                  {
                                      teacher_name = each_user.user_name,
-                                     avatar = each_user.avatar
+                                     avatar = each_class.avatar
                                  });
                 var the_course = a_course.Single();
                 var the_teacher = a_teacher.Single();
@@ -152,6 +153,10 @@ namespace NBackend.Biz
                                                  && a.semester == semester && a.year == year && a.validate_status == true);
                 var data = new
                 {
+                    sec_id,
+                    course_id,
+                    semester,
+                    year,
                     building = the_class.building,
                     room_number = the_class.room_numer,
                     time_slots = get_time_info(the_class.SecId, the_class.courseId, the_class.semester, the_class.year),
@@ -166,6 +171,7 @@ namespace NBackend.Biz
             }
         }
 
+        //获取某个学生某个学期参加的班级信息
         public static object GetPartClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -218,7 +224,7 @@ namespace NBackend.Biz
                                      select new
                                      {
                                          teacher_name = each_user.user_name,
-                                         avatar = each_user.avatar
+                                         avatar = each_class.avatar
                                      });
                     var the_course = a_course.Single();
                     var the_teacher = a_teacher.Single();
@@ -227,6 +233,8 @@ namespace NBackend.Biz
                     {
                         sec_id = a_class.SecId,
                         course_id = a_class.courseId,
+                        semester = semester,
+                        year = year,
                         //building = a_class.building,
                         //room_number = a_class.room_numer,
                         //section_time_id = a_class.section_timeId,
@@ -247,6 +255,7 @@ namespace NBackend.Biz
             }
         }
 
+        //学生获取正在申请进入的班级
         public static object GetWaitingClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -254,7 +263,7 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var any_student = context.Users.Where(a => a.Id == student_id&&(a.role=="teacher_manage"||a.role=="teacher_edu"));
+                var any_student = context.Users.Where(a => a.Id == student_id&&a.role=="student");
                 if (!any_student.Any())
                 {
                     return Helper.JsonConverter.Error(400, "这个人有问题");
@@ -281,7 +290,7 @@ namespace NBackend.Biz
                                      select new
                                      {
                                          teacher_name = each_user.user_name,
-                                         avatar = each_user.avatar
+                                         avatar = each_class.avatar
                                      });
                     var the_course = a_course.Single();
                     var the_teacher = a_teacher.Single();
@@ -313,6 +322,7 @@ namespace NBackend.Biz
             }
         }
 
+        //教师申请待审核的学生
         public static object GetWaitingStudents(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -355,6 +365,7 @@ namespace NBackend.Biz
             }
         }
 
+        //教师获取一个班级的详细信息，包括学生列表
         public static object GetOneClassDetails(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -388,6 +399,10 @@ namespace NBackend.Biz
                 }
                 var data = new
                 {
+                    sec_id,
+                    course_id,
+                    semester,
+                    year,
                     building = the_class.building,
                     room_number = the_class.room_numer,
                     //section_time_id = the_class.section_timeId,
@@ -399,6 +414,7 @@ namespace NBackend.Biz
             }
         }
 
+        //学生申请加入班级
         public static object JoinClass(object json, string token)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -444,31 +460,27 @@ namespace NBackend.Biz
             }
         }
 
-        //创建班级
+        //教师创建班级
         public static object CreateClass(object json)
         {
             //取数据
-            var body = Helper.JsonConverter.Decode(json);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-            var building = body["building"];
-            var room_number = body["room_number"];
-            //var section_time_id = int.Parse(body["section_time_id"]);
-            var avatar = body["avatar"];
-            var start_week = int.Parse(body["start_week"]);
-            var end_week = int.Parse(body["end_week"]);
-            var user_id = int.Parse(body["user_id"]);
-            var time_slots = body["time_slots"];
-            var time_slots_dic = JsonConvert.DeserializeObject < Dictionary<string, string>>(time_slots.ToString());
-            var day = time_slots_dic["day"];
-            var start_section = int.Parse(time_slots_dic["start_section"]);
-            var length = int.Parse(time_slots_dic["length"]);
-            var single_or_double = int.Parse(time_slots_dic["single_or_double"]);
-           // var sec_id = int.Parse(body["sec_id"]);
-
-            
-
+            var jObject = new JObject();
+            jObject = JObject.Parse(json.ToString());
+            JArray jlist = JArray.Parse(jObject["time_slots"].ToString());
+            //var body = Helper.JsonConverter.Decode(json);
+            var course_id = int.Parse(jObject["course_id"].ToString());
+            var semester = jObject["semester"].ToString();
+            var year = int.Parse(jObject["year"].ToString());
+            var building = jObject["building"].ToString();
+            var room_number = jObject["room_number"].ToString();
+            //var section_time_id = int.Parse(jObject["section_time_id"].ToString());
+            var avatar = jObject["avatar"].ToString();
+            var start_week = int.Parse(jObject["start_week"].ToString());
+            var end_week = int.Parse(jObject["end_week"].ToString());
+            var user_id = int.Parse(jObject["user_id"].ToString());
+            //var time_slots = body["time_slots"].toString();
+            //var time_slots_dic = (JArray)JsonConvert.DeserializeObject(time_slots);
+            // var sec_id = int.Parse(body["sec_id"]);
 
             //与数据库交互
             using (var context = new NBackendContext())
@@ -484,16 +496,9 @@ namespace NBackend.Biz
                 {
                     if (int.Parse(DateTime.Now.Month.ToString()) > 6)
                     {
-                        return Helper.JsonConverter.Error(400, "这都下学期啦");
+                        return Helper.JsonConverter.Error(400, "这都下半学期啦");
                     }
                 }
-
-                var any_time_slot = context.SectionTimes.Where(a => a.start_section == start_section && a.length == length);
-                if (!any_time_slot.Any())
-                {
-                    return Helper.JsonConverter.Error(400, "不存在这个时间方案");
-                }
-                var the_time_slot = any_time_slot.Single();
 
                 var any_teacher = context.Users.Where(a => a.Id == user_id);
                 if (!any_teacher.Any())
@@ -504,7 +509,7 @@ namespace NBackend.Biz
                 //                                            && a.semester == semester && a.year == year);
 
                 //插入班级
-                context.Sections.Add(new Section
+                var the_class = new Section
                 {
                     //SecId = sec_id,
                     courseId = course_id,
@@ -516,23 +521,41 @@ namespace NBackend.Biz
                     avatar = avatar,
                     start_week = start_week,
                     end_week = end_week,
-                });
+                };
+                context.Sections.Add(the_class);
                 context.SaveChanges();
-                var a_class = context.Sections.Where(a => a.courseId == course_id
-                                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
-                var the_class = a_class.First();
+                //var a_class = context.Sections.Where(a => a.courseId == course_id
+                //                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
+                //var the_class = a_class.First();
 
                 //插入multisectiontime表
-                context.MultiSectionTimes.Add(new MultiSectionTimes
+                for (int i = 0; i < jlist.Count(); i++)
                 {
-                    SecId = the_class.SecId,
-                    courseId = the_class.courseId,
-                    semester = the_class.semester,
-                    year = the_class.year,
-                    section_timeId = the_time_slot.SectionTimeId,
-                    day = day,
-                    single_or_double = single_or_double
-                });
+                    //var a_time_slot = time_slots_dic[i].ToString();
+                    //var one_time_slot = JsonConvert.DeserializeObject<Dictionary<string, string>>( a_time_slot);
+                    var day = jlist[i]["day"].ToString();
+                    var start_section = int.Parse(jlist[i]["start_section"].ToString());
+                    var length = int.Parse(jlist[i]["length"].ToString());
+                    var single_or_double = int.Parse(jlist[i]["single_or_double"].ToString());
+
+                    var any_time_slot = context.SectionTimes.Where(a => a.start_section == start_section && a.length == length);
+                    if (!any_time_slot.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "不存在这个时间方案");
+                    }
+                    var the_time_slot = any_time_slot.Single();
+
+                    context.MultiSectionTimes.Add(new MultiSectionTimes
+                    {
+                        SecId = the_class.SecId,
+                        courseId = the_class.courseId,
+                        semester = the_class.semester,
+                        year = the_class.year,
+                        section_timeId = the_time_slot.SectionTimeId,
+                        day = day,
+                        single_or_double = single_or_double
+                    });
+                }
                 //插入teach表
                 context.Teaches.Add(new Teach
                 {
@@ -547,6 +570,7 @@ namespace NBackend.Biz
             }
         }
 
+        //教师允许学生加入班级
         public static object PermitApplication(object json)
         {
             var body = Helper.JsonConverter.Decode(json);

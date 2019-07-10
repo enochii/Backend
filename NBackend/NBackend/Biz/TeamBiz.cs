@@ -5,12 +5,14 @@ using System.Web;
 using NBackend.Helper;
 using NBackend.Models;
 using System.Data.Entity;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace NBackend.Biz
 {
     public class TeamBiz
     {
+        //获取队伍列表
         public static object GetTeams(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -34,7 +36,7 @@ namespace NBackend.Biz
                         member_list.Add(new
                         {
                             student_id = team_member.studentId,
-                            student_name = context.Users.Single(a => a.Id == team_member.studentId)
+                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single()
                         });
                     }
                     list.Add(new
@@ -55,6 +57,7 @@ namespace NBackend.Biz
             }
         }
 
+        //根据关键字获取队伍
         public static object GetTeamsByKeyWords(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -79,7 +82,7 @@ namespace NBackend.Biz
                         member_list.Add(new
                         {
                             student_id = team_member.studentId,
-                            student_name = context.Users.Single(a => a.Id == team_member.studentId)
+                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single()
                         });
                     }
                     list.Add(new
@@ -95,13 +98,14 @@ namespace NBackend.Biz
                     teams = list
                 };
 
-
                 return Helper.JsonConverter.BuildResult(data);
             }
         }
 
+        //根据学生id获取其队伍列表
         public static object GetItsTeams(object json)
         {
+
             var body = Helper.JsonConverter.Decode(json);
             var student_id = int.Parse(body["user_id"]);
 
@@ -139,7 +143,7 @@ namespace NBackend.Biz
                         course_name = course_info.course_name,
                         team_id = each_team.teamId,
                         team_name = team_info.team_name,
-                        students = member_list
+                        students = JsonConvert.SerializeObject(member_list)
                     });
                 }
 
@@ -148,11 +152,11 @@ namespace NBackend.Biz
                     teams = list
                 };
 
-
                 return Helper.JsonConverter.BuildResult(data);
             }
         }
 
+        //创建一个队伍
         public static object PostTeam(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -171,26 +175,27 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "不存在这个班");
                 }
 
-                context.Teams.Add(new Team
+                var new_team = new Team
                 {
                     secId = sec_id,
                     courseId = course_id,
                     semester = semester,
                     year = year,
                     team_name = team_name,
-                });
+                };
+                context.Teams.Add(new_team);
 
                 context.SaveChanges();
 
                 var data = new
                 {
-                    team_id = context.Teams.Single(a => a.secId == sec_id && a.courseId == course_id
-                                                   && a.semester == semester && a.year == year).TeamId
+                    team_id = new_team.TeamId
                 };
                 return Helper.JsonConverter.BuildResult(data);
             }
         }
 
+        //学生加入队伍
         public static object PostTeamAttendance(object json)
         {
             var body = Helper.JsonConverter.Decode(json);

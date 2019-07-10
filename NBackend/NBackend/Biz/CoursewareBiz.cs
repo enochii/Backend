@@ -10,6 +10,7 @@ namespace NBackend.Biz
 {
     public class CoursewareBiz
     {
+        //获取某个班级的课件
         public static object GetAllCoursewares(object json)
         {
             var body = Helper.JsonConverter.Decode(json);

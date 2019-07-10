@@ -10,6 +10,7 @@ namespace NBackend.Biz
 {
     public class AttendanceBiz
     {
+        //获取某个班级某次课的出席记录
         public static object GetAttendanceRecords(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -70,6 +71,7 @@ namespace NBackend.Biz
             }
         }
 
+        //生成某个班级某次课的出席记录表
         public static object PostAttendance(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -108,6 +110,7 @@ namespace NBackend.Biz
             }
         }
 
+        //编辑某次出席记录
         public static object EditAttendanceRecords(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
