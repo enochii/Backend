@@ -19,7 +19,82 @@ namespace NBackend.Biz
             "期末考试",
         };
 
+        private static int getScoreById(NBackendContext ctx, int question_id, int exam_id)
+        {
+            var q = ctx.ExamQuestions.Where(eq => eq.questionId == question_id && eq.examId == exam_id);
 
+            if (!q.Any())
+            {
+                return -1;
+            }
+            else
+            {
+                return q.Single().score;
+            }
+        }
+
+        //学生提交试卷
+        public static object finishExam(string token, object json)
+        {
+            int user_id = JwtManager.DecodeToken(token);
+
+            NBackendContext ctx = new NBackendContext();
+            User user = UserBiz.getUserById(ctx, user_id);
+
+            var body = Helper.JsonConverter.Decode(json);
+
+            try
+            {
+                int exam_id = int.Parse(body["exam_id"]);
+                string questions = body["questions"];
+
+                var _body = JsonConvert.DeserializeObject<List<object>>(questions);
+
+                List<object> ques_ans = new List<object>();
+
+                int total_score = 0;
+                foreach(var qu in _body)
+                {
+                    var __body = Helper.JsonConverter.Decode(qu);
+                    int question_id = int.Parse(__body["question_id"]);
+
+                    string answer = __body["answer"];
+
+                    Question question = getQuestionById(ctx, question_id);
+                    if (question.answer.Equals(answer))
+                    {
+                        int single_score = getScoreById(ctx, question_id, exam_id);
+                        total_score += single_score;
+                    }
+                }
+
+                ctx.TakesExams.Add(new TakesExam
+                {
+                    StudentId = user_id,
+                    ExamId = exam_id,
+                    score = total_score
+                });
+                ctx.SaveChanges();
+
+                return Helper.JsonConverter.BuildResult(null);
+            }
+            catch
+            {
+                return Helper.JsonConverter.Error(400, "提交失败");
+            }
+        }
+
+        private static Question getQuestionById(NBackendContext ctx, int question_id)
+        {
+            var q = ctx.Questions.Where(qu => qu.QuestionId == question_id);
+            if (!q.Any())
+            {
+                return null;
+            }
+            return q.Single();
+        }
+
+        //创建考试第一步
         public static object postExam(string token, object json)
         {
             int user_id = JwtManager.DecodeToken(token);
@@ -178,6 +253,21 @@ namespace NBackend.Biz
             return data;
         }
 
+        private static int getQuestionIndex(NBackendContext ctx, int exam_id, int question_id)
+        {
+            var eq = ctx.ExamQuestions.Where(_eq => _eq.questionId == question_id && _eq.examId == exam_id).Select(_eq => _eq.index);
+
+            if (!eq.Any())
+            {
+                return -1;
+            }
+            else
+            {
+                return eq.Single();
+            }
+            //return -1;
+        }
+
         //获取某张试卷所有的题目，包括学生考试前后和老师查看
         public static object getQuestionsOfExam(string token, object json)
         {
@@ -228,6 +318,8 @@ namespace NBackend.Biz
             {
                 foreach(var qu in questions)
                 {
+                    int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+
                     qdata.Add(new
                     {
                         question_id = qu.QuestionId,
@@ -236,7 +328,7 @@ namespace NBackend.Biz
                         content = qu.content,
                         options = qu.options,
                         answer = qu.answer,
-
+                        index
                     });
                 }
                 
@@ -246,11 +338,27 @@ namespace NBackend.Biz
                 var q2 = ctx.TakesExams.Where(te => te.StudentId == user_id &&
                 te.ExamId == exam_id
                 );
-                //没参加过这场考试
                 if (!q2.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "无效用户或考试");
+                }
+
+                var ex = q2.Single().Exam;
+                string cur_time = DateTime.Now.ToUniversalTime().ToString().Replace('-', '.');
+
+                bool exam_ended = false;
+                if (cur_time.CompareTo(ex.end_time) != -1)
+                {
+                    exam_ended = true;
+                }
+
+                //没参加过这场考试并且没超时
+                if (!q2.Any() && !exam_ended)
                 {
                     foreach (var qu in questions)
                     {
+                        int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+
                         qdata.Add(new
                         {
                             question_id = qu.QuestionId,
@@ -258,7 +366,7 @@ namespace NBackend.Biz
                             chapter = qu.chapter,
                             content = qu.content,
                             options = qu.options,
-
+                            index
                         });
                     }
                     data = new
@@ -274,6 +382,8 @@ namespace NBackend.Biz
                 {
                     foreach (var qu in questions)
                     {
+                        int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+
                         qdata.Add(new
                         {
                             question_id = qu.QuestionId,
@@ -282,6 +392,7 @@ namespace NBackend.Biz
                             content = qu.content,
                             options = qu.options,
                             answer = qu.answer,
+                            index
                         });
                     }
                     data = new
@@ -336,6 +447,7 @@ namespace NBackend.Biz
                     chapter = qu.chapter,
                     content = qu.content,
                     answer = qu.answer,
+                    options = qu.options,
                 });
             }
 
@@ -398,7 +510,11 @@ namespace NBackend.Biz
                             else
                             {
                                 Question question = q.Single();
-                                ctx.Questions.Remove(question);
+                                question.answer = answer;
+                                question.chapter = chapter;
+                                question.options = options;
+                                question.content = content;
+                                ctx.SaveChanges();
                             }
                          }
                         return Helper.JsonConverter.BuildResult(null);
@@ -501,6 +617,7 @@ namespace NBackend.Biz
         //public static object getStudentsOfClass(NBackendContext ctx, )
 
         //创建试卷后为试卷添加题目
+        //创建试卷第二步
         public static object postQuestionOfExam(string token, object json)
         {
             
