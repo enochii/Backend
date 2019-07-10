@@ -268,6 +268,10 @@
     <Compile Include="Migrations\201907090543297_KULE.Designer.cs">
       <DependentUpon>201907090543297_KULE.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907091535283_Auto-Generate.cs" />
+    <Compile Include="Migrations\201907091535283_Auto-Generate.Designer.cs">
+      <DependentUpon>201907091535283_Auto-Generate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
@@ -410,6 +414,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907090543297_KULE.resx">
       <DependentUpon>201907090543297_KULE.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907091535283_Auto-Generate.resx">
+      <DependentUpon>201907091535283_Auto-Generate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

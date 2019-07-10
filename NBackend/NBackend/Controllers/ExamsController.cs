@@ -12,6 +12,7 @@ using System.Web.Http.Description;
 using NBackend.Biz;
 using NBackend.Models;
 
+
 namespace NBackend.Controllers
 {
     public class ExamsController : ApiController
@@ -71,27 +72,37 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("api/questions")]
-        public object postQuestion(object json)
+        public object PostQuestion(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
 
-            return ExamBiz.postExam(token, json);
+            return ExamBiz.postQuestion(token, json);
         }
         //删除一个题目
         [AllowAnonymous]
         [HttpDelete]
         [Route("api/questions")]
-        public object deleteQuestion(object json)
+        public object DeleteQuestion(object json)
         {
+<<<<<<< HEAD
             return json;
+=======
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.putQuestion(token, json);
+>>>>>>> upstream/master
         }
         //修改一个题目
         [AllowAnonymous]
         [HttpPut]
         [Route("api/questions")]
-        public object putQuestion(object json)
+        public object PutQuestion(object json)
         {
+<<<<<<< HEAD
             return json;
+=======
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.deleteQuestion(token, json);
+>>>>>>> upstream/master
         }
 
         protected override void Dispose(bool disposing)
