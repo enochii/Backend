@@ -167,6 +167,37 @@ namespace NBackend.Biz
 
         }
 
+        //获取用户所有班级的所有考试
+        public static List<Broadcast> _getAllExamsOfAllClass(NBackendContext ctx, string token)
+        {
+            int user_id = Helper.JwtManager.DecodeToken(token);
+
+            //获取用户的所有班级
+            var q = ctx.Takes.Where(take => take.StudentId == user_id).Select(take => take.Section);
+
+            //var secs = q.ToList();
+            var q1 = ctx.Broadcasts.Join(q, bro => bro.Section, sec => sec,
+                (bro, sec) => bro
+                );
+
+            //.Join(ctx.Courses, bro=>bro.Course, course=>course,
+            //    (bro, course) => new {bro, course.}
+
+            List<Broadcast> all_sec_exams = new List<Broadcast>();
+
+            return all_sec_exams;
+        }
+
+        //
+        public static List<object> getAllBroadcasts(string token)
+        {
+            NBackendContext ctx = new NBackendContext();
+
+            var bros = _getAllExamsOfAllClass(ctx, token);
+
+            return ListToObj(bros);
+        }
+
         //将列表转化为json
         private static List<object> ListToObj(List<Broadcast> broadcasts)
         {
@@ -176,6 +207,7 @@ namespace NBackend.Biz
             {
                 list.Add(new
                 {
+                    broadcast.Course.course_name,
                     broadcast_id = broadcast.BroadcastId,
                     broadcast.content,
                     broadcast.type,
@@ -226,19 +258,24 @@ namespace NBackend.Biz
         //获取全部广播/班级广播
         public static object getBroadcasts(string token, object json, bool all)
         {
-            var class_bros = getBroadcastsOfClass(token, json);
-            if(class_bros == null)
-            {
-                return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
-            }
+            List<object> class_bros = null;
 
             var global_bros = getGlobalBroadcasts();
 
             if (all)
             {
+                class_bros = getAllBroadcasts(token);
                 foreach (object bro in global_bros)
                 {
                     class_bros.Add(bro);
+                }
+            }
+            else
+            {
+                class_bros = getBroadcastsOfClass(token, json);
+                if (class_bros == null)
+                {
+                    return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
                 }
             }
 
