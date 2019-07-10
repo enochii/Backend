@@ -300,6 +300,10 @@
     <Compile Include="Migrations\201907101542504_comments.Designer.cs">
       <DependentUpon>201907101542504_comments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907101938334_attention.cs" />
+    <Compile Include="Migrations\201907101938334_attention.Designer.cs">
+      <DependentUpon>201907101938334_attention.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
@@ -465,6 +469,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907101542504_comments.resx">
       <DependentUpon>201907101542504_comments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101938334_attention.resx">
+      <DependentUpon>201907101938334_attention.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

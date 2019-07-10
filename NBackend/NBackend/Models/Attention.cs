@@ -36,6 +36,7 @@ namespace NBackend.Models
         public Section Section { get; set; }
 
        // 第几节课
+       [Key, Column(Order = 6)]
         public int timeId { get; set; }
         //出席状态，是否出席
         public int status { get; set; }
