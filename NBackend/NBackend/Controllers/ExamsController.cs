@@ -112,7 +112,7 @@ namespace NBackend.Controllers
         public object PutQuestion(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
-            return ExamBiz.deleteQuestion(token, json);
+            return ExamBiz.putQuestion(token, json);
         }
 
         protected override void Dispose(bool disposing)
