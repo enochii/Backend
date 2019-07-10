@@ -37,15 +37,15 @@ namespace NBackend.Controllers
 
             return ExamBiz.postExam(token, json);
         }
-        [AllowAnonymous]
-        [HttpPost]
-        [Route("api/exam_creation")]
-        public object PostExamQuestions(object json)
-        {
-            var token = Request.Headers.Authorization.Parameter;
+        //[AllowAnonymous]
+        //[HttpPost]
+        //[Route("api/exam_creation")]
+        //public object PostExamQuestions(object json)
+        //{
+        //    var token = Request.Headers.Authorization.Parameter;
 
-            return ExamBiz.postQuestionOfExam(token, json);
-        }
+        //    return ExamBiz.postQuestionOfExam(token, json);
+        //}
 
         [AllowAnonymous]
         [HttpPost]

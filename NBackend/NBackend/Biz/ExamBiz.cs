@@ -94,7 +94,7 @@ namespace NBackend.Biz
             return q.Single();
         }
 
-        //创建考试第一步
+        //创建考试
         public static object postExam(string token, object json)
         {
             int user_id = JwtManager.DecodeToken(token);
@@ -121,6 +121,7 @@ namespace NBackend.Biz
             string title = body["title"];
 
             //NBackendContext ctx = new NBackendContext();
+            //创建考试第一步
             Exam exam = new Exam
             {
                 secId = sec_id,
@@ -135,11 +136,43 @@ namespace NBackend.Biz
             };
 
             ctx.Exams.Add(exam);
+
+            //创建考试第二步
+            int exam_id = exam.ExamId;
+            string _quess = body["questions"];
+
+            var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
+
+            var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
+            foreach (object obj in quess)
+            {
+                var _body = Helper.JsonConverter.Decode(obj);
+                int question_id = int.Parse(_body["question_id"]);
+                int single_score = int.Parse(_body["score"]);
+                int index = int.Parse(_body["index"]);
+
+                if (questions.Contains(question_id))
+                {
+                    ctx.ExamQuestions.Add(new ExamQuestion
+                    {
+                        examId = exam_id,
+                        questionId = question_id,
+                        score = single_score,
+                        index = index,
+                    });
+                }
+                else
+                {
+                    //有一道题找不到？
+                }
+            }
+
+
             ctx.SaveChanges();
 
             var data = new
             {
-                exam_id = exam.ExamId
+                exam_id
             };
             return Helper.JsonConverter.BuildResult(data);
         }
@@ -618,55 +651,55 @@ namespace NBackend.Biz
 
         //创建试卷后为试卷添加题目
         //创建试卷第二步
-        public static object postQuestionOfExam(string token, object json)
-        {
+        //public static object postQuestionOfExam(string token, object json)
+        //{
             
-            int user_id = JwtManager.DecodeToken(token);
+        //    int user_id = JwtManager.DecodeToken(token);
 
-            NBackendContext ctx = new NBackendContext();
-            User user = UserBiz.getUserById(ctx, user_id);
+        //    NBackendContext ctx = new NBackendContext();
+        //    User user = UserBiz.getUserById(ctx, user_id);
 
-            if (user == null || !user.role.Equals("teacher_edu"))
-            {
-                //可以再判断这个老师是不是教这个的
-                return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
-            }
+        //    if (user == null || !user.role.Equals("teacher_edu"))
+        //    {
+        //        //可以再判断这个老师是不是教这个的
+        //        return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
+        //    }
 
-            //[ { exam_id, question_id, score, index}, {...}]
-            var body = Helper.JsonConverter.Decode(json);
-            int exam_id = int.Parse(body["exam_id"]);
-            string _quess = body["questions"];
+        //    //[ { exam_id, question_id, score, index}, {...}]
+        //    var body = Helper.JsonConverter.Decode(json);
+        //    int exam_id = int.Parse(body["exam_id"]);
+        //    string _quess = body["questions"];
 
-            var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
+        //    var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
 
-            var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
-            foreach(object obj in quess)
-            {
-                var _body = Helper.JsonConverter.Decode(obj);
-                int question_id = int.Parse(_body["question_id"]);
-                int single_score = int.Parse(_body["score"]);
-                int index = int.Parse(_body["index"]);
+        //    var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
+        //    foreach(object obj in quess)
+        //    {
+        //        var _body = Helper.JsonConverter.Decode(obj);
+        //        int question_id = int.Parse(_body["question_id"]);
+        //        int single_score = int.Parse(_body["score"]);
+        //        int index = int.Parse(_body["index"]);
 
-                if (questions.Contains(question_id))
-                {
-                    ctx.ExamQuestions.Add(new ExamQuestion
-                    {
-                        examId = exam_id,
-                        questionId = question_id,
-                        score = single_score,
-                        index = index,
-                    });
-                }
-                else
-                {
-                    //有一道题找不到？
-                }
-            }
+        //        if (questions.Contains(question_id))
+        //        {
+        //            ctx.ExamQuestions.Add(new ExamQuestion
+        //            {
+        //                examId = exam_id,
+        //                questionId = question_id,
+        //                score = single_score,
+        //                index = index,
+        //            });
+        //        }
+        //        else
+        //        {
+        //            //有一道题找不到？
+        //        }
+        //    }
 
-            ctx.SaveChanges();
+        //    ctx.SaveChanges();
 
-            object data = new { exam_id = exam_id };
-            return Helper.JsonConverter.BuildResult(data);
-        }
+        //    object data = new { exam_id = exam_id };
+        //    return Helper.JsonConverter.BuildResult(data);
+        //}
     }
 }
