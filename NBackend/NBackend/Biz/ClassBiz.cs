@@ -13,6 +13,18 @@ namespace NBackend.Biz
     public class ClassBiz
     {
         //获取某个班级的开课时段
+        public static Section getSection(NBackendContext ctx, int sec_id, int course_id, int year, string semester)
+        {
+            var q = ctx.Sections.Where(sec => sec.SecId == sec_id && sec.courseId == course_id
+            && sec.year == year && sec.semester == semester
+            );
+            if (!q.Any())
+            {
+                return null;
+            }
+            return q.Single();
+        }
+
         public static object get_time_info(int sec_id, int course_id, string semester, int year)
         {
             using (var context = new NBackendContext())

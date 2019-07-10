@@ -36,14 +36,14 @@ namespace NBackend.Biz
                         member_list.Add(new
                         {
                             student_id = team_member.studentId,
-                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single()
+                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
                         });
                     }
                     list.Add(new
                     {
                         team_id = each_team.TeamId,
                         team_name = each_team.team_name,
-                        students = member_list
+                        students = JsonConvert.SerializeObject(member_list)
                     });
                 }
 
@@ -82,14 +82,14 @@ namespace NBackend.Biz
                         member_list.Add(new
                         {
                             student_id = team_member.studentId,
-                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single()
+                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
                         });
                     }
                     list.Add(new
                     {
                         team_id = each_team.TeamId,
                         team_name = each_team.team_name,
-                        students = member_list
+                        students = JsonConvert.SerializeObject(member_list)
                     });
                 }
 
@@ -131,7 +131,7 @@ namespace NBackend.Biz
                         member_list.Add(new
                         {
                             student_id = team_member.studentId,
-                            student_name = context.Users.Single(a => a.Id == team_member.studentId)
+                            student_name = context.Users.Single(a => a.Id == team_member.studentId).user_name
                         });
                     }
                     list.Add(new

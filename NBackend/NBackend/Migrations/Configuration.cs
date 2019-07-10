@@ -21,6 +21,21 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
+
+            context.Discussions.AddOrUpdate(
+                  p => p.secId,
+                  new Models.Discussion
+                  {
+                      secId = 1,
+                      courseId = 2,
+                      semester = "Spring",
+                      year = 2019,
+                      userId=1651162,
+                      content="���������콲docker",
+                      time = "2019.07.10 18:00",
+                      is_comment=false
+                  }
+                );
             //context.Users.AddOrUpdate(
             //  p => p.user_name,
             //  new Models.User
@@ -172,7 +187,7 @@ namespace NBackend.Migrations
             //      year = 2019,
 
             //      userId = 1753127,
-            //      content = "hhh",
+            //      content = "����̫����",
             //      time = "1997.11.22 12:01"
 
             //      //scope="������",

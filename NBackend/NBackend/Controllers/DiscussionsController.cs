@@ -17,6 +17,37 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/discussions")]
+        public object GetDisscussions(object json)
+        {
+            return Biz.DiscussionBiz.GetDiscussions(json);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/one_discussion")]
+        public object GetOneDiscussion(object json)
+        {
+            //String token = Request.Headers.Authorization.Parameter;
+            return Biz.DiscussionBiz.GetOneDiscussion(json);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/discussion")]
+        public object PostDiscussion(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录啊");
+            }
+            return Biz.DiscussionBiz.PostDiscussion(json);
+        }
+
+
         // GET: api/Discussions
         public IQueryable<Discussion> GetDiscussions()
         {
@@ -114,6 +145,16 @@ namespace NBackend.Controllers
         private bool DiscussionExists(int id)
         {
             return db.Discussions.Count(e => e.DisscussionId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/discussions")]
+        [Route("api/one_discussion")]
+        [Route("api/discussion")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

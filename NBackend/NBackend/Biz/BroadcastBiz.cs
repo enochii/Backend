@@ -11,6 +11,11 @@ namespace NBackend.Biz
     public class BroadcastBiz
     {
         //获取某个班的作业
+        const int TYPE_JOB = 1, TYPE_ACTIVITY = 2;
+        const int SCOPE_CLASS = 1, SCOPE_GOLBAL = 2;
+
+        
+
         public static object GetAllHomework(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -54,5 +59,269 @@ namespace NBackend.Biz
             }
         }
 
+        //创建广播
+        public static object postBroadcast(string token, object json)
+        {
+
+
+            var body = JsonConverter.Decode(json);
+            NBackendContext ctx = new NBackendContext();
+
+            int teacher_id = JwtManager.DecodeToken(token);
+            User user = UserBiz.getUserById(ctx, teacher_id);
+            if (user == null)
+            {
+                return Helper.JsonConverter.Error(400, "你还没登录？");
+            }
+
+            int type = int.Parse(body["type"]);
+            int scope = int.Parse(body["scope"]);
+
+            string start_time = body["start_time"];
+            string end_time = body["end_time"];
+            string published_time = body["published_time"];
+            string content = body["content"];
+
+            //k
+            int sec_id, course_id, year;
+            string semester;
+
+            if (scope == SCOPE_CLASS)
+            {
+                if (!user.role.Equals("teacher_edu"))
+                {
+                    return Helper.JsonConverter.Error(400, "你没有权限呢");
+                }
+                sec_id = int.Parse(body["sec_id"]);
+                course_id = int.Parse(body["course_id"]);
+                year = int.Parse(body["year"]);
+                semester = body["semester"];
+            }
+            else
+            {
+                if (!user.role.Equals("teacher_manage"))
+                {
+                    return Helper.JsonConverter.Error(400, "你没有权限呢");
+                }
+                //默认班级
+                sec_id = 0;
+                course_id = 0;
+                year = 1997;
+                semester = "Spring";
+            }
+            Broadcast broadcast = new Broadcast
+            {
+                secId = sec_id,
+                courseId = course_id,
+                year = year,
+                semester = semester,
+
+                scope = SCOPE_CLASS,
+                type = type,
+                start_time = start_time,
+                publish_time = published_time,
+                end_time = end_time,
+            };
+
+            ctx.TeacherBroadcasts.Add(new TeacherBroadcast
+            {
+                teacherId = teacher_id,
+                broadcastId = broadcast.BroadcastId
+            });
+
+            ctx.Broadcasts.Add(broadcast);
+            ctx.SaveChanges();
+
+            var data = new
+            {
+                broadcast_id = broadcast.BroadcastId
+            };
+            return JsonConverter.BuildResult(data);
+
+
+        }
+
+        //获取班级的所有广播
+        private static List<object> getBroadcastsOfClass(string token, object json)
+        {
+            int user_id = JwtManager.DecodeToken(token);
+            //做验证
+
+            try
+            {
+                var body = JsonConverter.Decode(json);
+                int sec_id = int.Parse(body["sec_id"]);
+                int course_id = int.Parse(body["course_id"]);
+                int year = int.Parse(body["year"]);
+                string semester = body["semester"];
+
+                NBackendContext ctx = new NBackendContext();
+
+                return ListToObj(_getBroadcastsOfClass(ctx, sec_id, course_id, year, semester));
+            }
+            catch
+            {
+                return null;
+            }
+            
+
+        }
+
+        //将列表转化为json
+        private static List<object> ListToObj(List<Broadcast> broadcasts)
+        {
+            List<object> list = new List<object>();
+
+            foreach(Broadcast broadcast in broadcasts)
+            {
+                list.Add(new
+                {
+                    broadcast_id = broadcast.BroadcastId,
+                    broadcast.content,
+                    broadcast.type,
+                    broadcast.scope,
+                    sec_id = broadcast.secId,
+                    course_id = broadcast.courseId,
+                    broadcast.semester,
+                    broadcast.year,
+                    broadcast.publish_time,
+                    broadcast.start_time,
+                    broadcast.end_time,
+                });
+            }
+
+            return list;
+        }
+
+        private static List<Broadcast> _getBroadcastsOfClass(NBackendContext ctx, int sec_id, int course_id, int year, string semester)
+        {
+            Section sec = Biz.ClassBiz.getSection(ctx, sec_id, course_id, year, semester);
+
+            if (sec == null)
+            {
+                return null;
+            }
+
+            var q = ctx.Broadcasts.Where(broadcast => broadcast.Section.Equals(sec));
+            var broadcasts = q.ToList();
+
+            return broadcasts;
+        }
+      
+        private static List<Broadcast> _getGlobalBroadcasts(NBackendContext ctx)
+        {
+
+            var q = ctx.Broadcasts.Where(bro => bro.scope == SCOPE_GOLBAL);
+            return q.ToList();
+        }
+
+        //获取全局广播
+        private static List<object> getGlobalBroadcasts()
+        {
+            NBackendContext ctx = new NBackendContext();
+
+            return ListToObj(_getGlobalBroadcasts(ctx));
+        }
+
+        //获取全部广播/班级广播
+        public static object getBroadcasts(string token, object json, bool all)
+        {
+            var class_bros = getBroadcastsOfClass(token, json);
+            if(class_bros == null)
+            {
+                return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
+            }
+
+            var global_bros = getGlobalBroadcasts();
+
+            if (all)
+            {
+                foreach (object bro in global_bros)
+                {
+                    class_bros.Add(bro);
+                }
+            }
+
+            return JsonConverter.BuildResult(new { broadcasts = class_bros });
+        }
+ 
+
+        //删除广播
+        public static object deleteBroadcast(string token, object json)
+        {
+            var body = JsonConverter.Decode(json);
+            int broadcast_id = int.Parse(body["broadcast"]);
+            int user_id = JwtManager.DecodeToken(token);
+
+            NBackendContext ctx = new NBackendContext();
+
+            var q = ctx.TeacherBroadcasts.Where(tb => tb.broadcastId == broadcast_id && tb.teacherId == user_id);
+            var q1 = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
+
+            if (!q.Any())
+            {
+                return JsonConverter.Error(400, "该广播不存在或者你没有创建过该广播(＾Ｕ＾)ノ~ＹＯ");
+            }
+            var _tb = q.Single();
+            var broadcast = q1.Single();
+            ctx.TeacherBroadcasts.Remove(_tb);
+            ctx.Broadcasts.Remove(broadcast);
+
+            ctx.SaveChanges();
+            return JsonConverter.BuildResult(null);
+            
+        }
+        //获取广播的具体信息
+        public static object getBroastInfo(string token, object json)
+        {
+            var body = JsonConverter.Decode(json);
+            int broadcast_id = int.Parse(body["broadcast_id"]);
+
+            NBackendContext ctx = new NBackendContext();
+            var q = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
+
+            if (!q.Any())
+            {
+                return JsonConverter.Error(400, "该广播不存在！");
+            }
+
+            var broadcast = q.Single();
+
+            object data;
+            if (broadcast.scope == SCOPE_CLASS)
+            {
+                data = new
+                {
+                    broadcast_id,
+                    broadcast.content,
+                    broadcast.type,
+                    broadcast.scope,
+                    sec_id = broadcast.secId,
+                    course_id = broadcast.courseId,
+                    broadcast.semester,
+                    broadcast.year,
+                    broadcast.start_time,
+                    broadcast.end_time,
+                    broadcast.publish_time,
+                };
+            }
+            else
+            {
+                data = new
+                {
+                    broadcast_id,
+                    broadcast.content,
+                    broadcast.type,
+                    broadcast.scope,
+
+                    broadcast.start_time,
+                    broadcast.end_time,
+                    broadcast.publish_time,
+                };
+                
+            }
+
+            return JsonConverter.BuildResult(data);
+        }
     }
 }

@@ -27,8 +27,8 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "不存在这个班级");
                 }
 
-                var discussions = context.Disscussions.Where(a => a.courseId == course_id && a.secId == sec_id
-                                                            && a.semester == semester && a.year == year && a.comments.ToList()==null);
+                var discussions = context.Discussions.Where(a => a.courseId == course_id && a.secId == sec_id
+                                                            && a.semester == semester && a.year == year && a.is_comment == false);
                 var list = new List<object>();
 
                 if (discussions.Any())
@@ -45,7 +45,7 @@ namespace NBackend.Biz
                             role = user_info.role,
                             content = a_discussion.content,
                             time = a_discussion.time,
-                            //question_id = a_discussion.Disscussion_DisscussionId
+                            //question_id = a_discussion.Discussion_DisscussionId
                         });
                     }
                 }
@@ -66,7 +66,7 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var a_discussion = context.Disscussions.Where(a => a.DisscussionId == discussion_id);
+                var a_discussion = context.Discussions.Where(a => a.DisscussionId == discussion_id);
                 if (!a_discussion.Any())
                 {
                     return Helper.JsonConverter.Error(400, "这个讨论不存在");
@@ -75,7 +75,7 @@ namespace NBackend.Biz
                 var replys = the_discussion.comments;
                 var list = new List<object>();
 
-                if (replys.Any())
+                if (the_discussion.is_comment == true)
                 {
                     foreach (var each_reply in replys)
                     {
@@ -128,10 +128,10 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "这个人有问题");
                 }
 
-                Disscussion new_discussion = new Disscussion();
+                Discussion new_discussion = new Discussion();
                 if (question_id == 0)
                 {
-                    new_discussion = new Disscussion
+                    new_discussion = new Discussion
                     {
                         secId = sec_id,
                         courseId = course_id,
@@ -140,23 +140,24 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
+                        is_comment = false,
+                        //comments = new List<Discussion>()
                         //comments = null,
                         //DisscussionId = discussion_id
                     };
-
                     //DisscussionId = discussion_id
-                    context.Disscussions.Add(new_discussion);
+                    context.Discussions.Add(new_discussion);
 
                 }
                 else
                 {
-                    var any_discussion = context.Disscussions.Where(a => a.DisscussionId == question_id);
+                    var any_discussion = context.Discussions.Where(a => a.DisscussionId == question_id);
                     if (!any_discussion.Any())
                     {
                         return Helper.JsonConverter.Error(400, "这个问题不对啊");
                     }
 
-                    new_discussion = new Disscussion
+                    new_discussion = new Discussion
                     {
                         secId = sec_id,
                         courseId = course_id,
@@ -166,6 +167,7 @@ namespace NBackend.Biz
                         content = content,
                         time = time,
                         comments = null,
+                        is_comment = true
                         //DisscussionId = discussion_id
                     };
                     any_discussion.Single().comments.Add(new_discussion);
@@ -180,7 +182,7 @@ namespace NBackend.Biz
                 {
 
                 }
-                
+
                 return Helper.JsonConverter.BuildResult(new
                 {
                     discussion_id = new_discussion.DisscussionId
