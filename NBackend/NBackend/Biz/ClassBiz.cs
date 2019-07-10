@@ -5,7 +5,8 @@ using System.Web;
 using NBackend.Helper;
 using NBackend.Models;
 using System.Data.Entity;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace NBackend.Biz
 {
@@ -47,12 +48,17 @@ namespace NBackend.Biz
             }
         }
 
+        //获取班级列表信息
         public static object GetAllClasses()
         {
             using (var context = new NBackendContext())
             {
                 var classes = context.Sections;
                 var list = new List<object>();
+                if (!classes.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "现在还没有已经创建的班级");
+                }
 
                 foreach (var a_class in classes)
                 {
@@ -103,6 +109,7 @@ namespace NBackend.Biz
             }
         }
 
+        //获取一个特定班级的信息
         public static object GetOneClass(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -114,6 +121,11 @@ namespace NBackend.Biz
             using (var context = new NBackendContext())
             {
                 var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
+                if (!a_class.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个班级");
+                }
+
                 var the_class = a_class.Single();
                 var a_course = (from each_course in context.Courses
                                 where each_course.CourseId == the_class.courseId
@@ -163,6 +175,12 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
+                var any_student = context.Users.Where(a => a.Id == student_id&&a.role=="student");
+                if (!any_student.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个人有问题");
+                }
+
                 var some_classes = (from each_class in context.Sections
                                     join each_taking in context.Takes
                                         on new { each_class.courseId, each_class.semester, each_class.year }
@@ -175,6 +193,10 @@ namespace NBackend.Biz
                                         year = each_class.year,
                                         semester = each_class.semester
                                     });
+                //if (!some_classes.Any())
+                //{
+                //    return Helper.JsonConverter.Error(400, "该学生在该学期没有加入任何班级");
+                //}
 
                 var list = new List<object>();
 
@@ -232,13 +254,13 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var some_classes = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
-
-                if (!some_classes.Any())
+                var any_student = context.Users.Where(a => a.Id == student_id&&(a.role=="teacher_manage"||a.role=="teacher_edu"));
+                if (!any_student.Any())
                 {
-                    return Helper.JsonConverter.BuildResult(null);
+                    return Helper.JsonConverter.Error(400, "这个人有问题");
                 }
 
+                var some_classes = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
                 var list = new List<object>();
 
                 foreach (var a_class in some_classes)
@@ -303,10 +325,10 @@ namespace NBackend.Biz
             {
                 var waiting_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                            && a.semester == semester && a.year == year && a.validate_status == false);
-                if (!waiting_students.Any())
-                {
-                    return Helper.JsonConverter.BuildResult(null);
-                }
+                //if (!waiting_students.Any())
+                //{
+                //    return Helper.JsonConverter.BuildResult(null);
+                //}
 
                 var students_info = (from student in waiting_students
                                      join info in context.Users on student.StudentId equals info.Id
@@ -344,6 +366,11 @@ namespace NBackend.Biz
             using (var context = new NBackendContext())
             {
                 var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
+                if (!a_class.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个班级");
+                }
+
                 var the_class = a_class.Single();
                 var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                        && a.semester == semester && a.year == year);
@@ -387,12 +414,17 @@ namespace NBackend.Biz
                                                             && a.semester == semester && a.year == year);
                 if (!a_class.Any())
                 {
-                    return Helper.JsonConverter.Error(401, "班级不存在");
+                    return Helper.JsonConverter.Error(400, "该班级不存在");
                 }
                 else
                 {
                     var the_class = a_class.Single();
                     var a_student = context.Students.Where(a => a.StudentId == student_id);
+                    if (!a_student.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "不存在这个学生");
+                    }
+
                     var the_student = a_student.Single();
                     context.Takes.Add(new Take
                     {
@@ -412,8 +444,10 @@ namespace NBackend.Biz
             }
         }
 
+        //创建班级
         public static object CreateClass(object json)
         {
+            //取数据
             var body = Helper.JsonConverter.Decode(json);
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
@@ -424,12 +458,52 @@ namespace NBackend.Biz
             var avatar = body["avatar"];
             var start_week = int.Parse(body["start_week"]);
             var end_week = int.Parse(body["end_week"]);
+            var user_id = int.Parse(body["user_id"]);
+            var time_slots = body["time_slots"];
+            var time_slots_dic = JsonConvert.DeserializeObject < Dictionary<string, string>>(time_slots.ToString());
+            var day = time_slots_dic["day"];
+            var start_section = int.Parse(time_slots_dic["start_section"]);
+            var length = int.Parse(time_slots_dic["length"]);
+            var single_or_double = int.Parse(time_slots_dic["single_or_double"]);
            // var sec_id = int.Parse(body["sec_id"]);
 
+            
+
+
+            //与数据库交互
             using (var context = new NBackendContext())
             {
-                var any_classes = context.Sections.Where(a => a.courseId == course_id
-                                                            && a.semester == semester && a.year == year);
+                //验证数据
+                var any_course = context.Courses.Where(a => a.CourseId == course_id);
+                if (!any_course.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这门课程");
+                }
+
+                if(semester == "Spring")
+                {
+                    if (int.Parse(DateTime.Now.Month.ToString()) > 6)
+                    {
+                        return Helper.JsonConverter.Error(400, "这都下学期啦");
+                    }
+                }
+
+                var any_time_slot = context.SectionTimes.Where(a => a.start_section == start_section && a.length == length);
+                if (!any_time_slot.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个时间方案");
+                }
+                var the_time_slot = any_time_slot.Single();
+
+                var any_teacher = context.Users.Where(a => a.Id == user_id);
+                if (!any_teacher.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个老师");
+                }
+                //var any_classes = context.Sections.Where(a => a.courseId == course_id
+                //                                            && a.semester == semester && a.year == year);
+
+                //插入班级
                 context.Sections.Add(new Section
                 {
                     //SecId = sec_id,
@@ -445,8 +519,30 @@ namespace NBackend.Biz
                 });
                 context.SaveChanges();
                 var a_class = context.Sections.Where(a => a.courseId == course_id
-                                                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
+                                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
                 var the_class = a_class.First();
+
+                //插入multisectiontime表
+                context.MultiSectionTimes.Add(new MultiSectionTimes
+                {
+                    SecId = the_class.SecId,
+                    courseId = the_class.courseId,
+                    semester = the_class.semester,
+                    year = the_class.year,
+                    section_timeId = the_time_slot.SectionTimeId,
+                    day = day,
+                    single_or_double = single_or_double
+                });
+                //插入teach表
+                context.Teaches.Add(new Teach
+                {
+                    TeacherId = user_id,
+                    SecId = the_class.SecId,
+                    courseId = the_class.courseId,
+                    semester = the_class.semester,
+                    year = the_class.year
+                });
+                context.SaveChanges();
                 return Helper.JsonConverter.BuildResult(new { the_class.SecId });
             }
         }
@@ -462,17 +558,17 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var a_class = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
+                var a_student = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
 
-                if (!a_class.Any())
+                if (!a_student.Any())
                 {
-                    return Helper.JsonConverter.Error(401, "班级不存在");
+                    return Helper.JsonConverter.Error(401, "学生在出席记录中不存在");
                 }
                 else
                 {
-                    foreach (var one_class in a_class)
+                    foreach (var one_student in a_student)
                     {
-                        one_class.validate_status = true;
+                        one_student.validate_status = true;
                     }
                     context.SaveChanges();
                     return Helper.JsonConverter.BuildResult(null);

@@ -19,6 +19,12 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
+                var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
+                if (!a_class.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个班级");
+                }
+
                 var discussions = context.Disscussions.Where(a => a.courseId == course_id && a.secId == sec_id
                                                             && a.semester == semester && a.year == year && a.comments != null);
                 var list = new List<object>();
@@ -55,7 +61,12 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var the_discussion = context.Disscussions.Single(a => a.DisscussionId == discussion_id);
+                var a_discussion = context.Disscussions.Where(a => a.DisscussionId == discussion_id);
+                if (!a_discussion.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个讨论不存在");
+                }
+                var the_discussion = a_discussion.Single();
                 var replys = the_discussion.comments;
                 var list = new List<object>();
 
@@ -65,7 +76,8 @@ namespace NBackend.Biz
                     {
                         discussion_id = each_reply.DisscussionId,
                         user_id = each_reply.userId,
-                        user_name = context.Users.Single(a => a.Id == each_reply.userId),
+                        user_name = context.Users.Single(a => a.Id == each_reply.userId).user_name,
+                        role = context.Users.Single(a => a.Id == each_reply.userId).role,
                         content = each_reply.content,
                         time = each_reply.time,
                         question_id = the_discussion.DisscussionId
@@ -77,6 +89,7 @@ namespace NBackend.Biz
                     discussion_id = the_discussion.DisscussionId,
                     user_id = the_discussion.userId,
                     user_name = context.Users.Single(a=>a.Id==the_discussion.userId),
+                    role = context.Users.Single(a => a.Id == the_discussion.userId).role,
                     content = the_discussion.content,
                     time = the_discussion.time,
                     replys = list
@@ -97,10 +110,16 @@ namespace NBackend.Biz
             var content = body["content"];
             var time = body["time"];
             var question_id = int.Parse(body["question_id"]);
-            var discussion_id = int.Parse(body["discussion_id"]);
+            //var discussion_id = int.Parse(body["discussion_id"]);
 
             using (var context = new NBackendContext())
             {
+                var any_user = context.Users.Where(a => a.Id == user_id);
+                if (!any_user.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个人有问题");
+                }
+
                 if (question_id == 0)
                 {
                     context.Disscussions.Add(new Disscussion
@@ -112,13 +131,19 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
-                        DisscussionId = discussion_id
+                        //DisscussionId = discussion_id
                     });
 
                 }
                 else
                 {
-                    context.Disscussions.Single(a => a.DisscussionId == question_id).comments.Add(new Disscussion
+                    var any_discussion = context.Disscussions.Where(a => a.DisscussionId == question_id);
+                    if (!any_discussion.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "这个问题不对啊");
+                    }
+
+                    any_discussion.Single().comments.Add(new Disscussion
                     {
                         secId = sec_id,
                         courseId = course_id,

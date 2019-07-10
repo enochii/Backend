@@ -10,6 +10,7 @@ namespace NBackend.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            //AutomaticMigrationDataLossAllowed = true;
             ContextKey = "NBackend.Models.NBackendContext";
         }
 
@@ -65,22 +66,22 @@ namespace NBackend.Migrations
             //);
             //context.SectionTimes.AddOrUpdate(
             //  p => p.SectionTimeId,
+            //new Models.SectionTime
+            //{
+            //    //SectionTimeId = 10001,
+            //    //day = "周一",
+            //    start_section = 1,
+            //    length = 2
+            //    //start_week = 1,
+            //    //end_week = 17,
+            //    //single_or_double = 1
+            //},
             //  new Models.SectionTime
             //  {
-            //      SectionTimeId=0000,
-            //      //day = "周一",
-            //      start_section = 1,
-            //      length = 2,
-            //      //start_week = 1,
-            //      //end_week = 17,
-            //      //single_or_double = 1
-            //  },
-            //  new Models.SectionTime
-            //  {
-            //      SectionTimeId = 0001,
+            //      //SectionTimeId = 10002,
             //      //day = "周一",
             //      start_section = 3,
-            //      length = 2,
+            //      length = 2
             //      //    start_week = 1,
             //      //    end_week = 17,
             //      //    single_or_double = 1
@@ -148,6 +149,20 @@ namespace NBackend.Migrations
             //  }
             //);
 
+            //    context.Disscussions.AddOrUpdate(
+            //      p => p.DisscussionId,
+            //      new Models.Disscussion
+            //      {
+            //          secId = 0,
+            //          courseId = 0,
+            //          semester = "spring",
+            //          year = 2019,
+            //          userId = 1753122,
+            //          content = "aaa",
+            //          time = "2019.12.1 01.01"
+            //      }
+            //    );
+            //}
         }
     }
 }

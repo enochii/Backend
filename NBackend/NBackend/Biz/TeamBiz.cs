@@ -103,10 +103,16 @@ namespace NBackend.Biz
         public static object GetItsTeams(object json)
         {
             var body = Helper.JsonConverter.Decode(json);
-            var student_id = int.Parse(body["student_id"]);
+            var student_id = int.Parse(body["user_id"]);
 
             using (var context = new NBackendContext())
             {
+                var any_student = context.Users.Where(a => a.Id == student_id);
+                if (!any_student.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个人有问题");
+                }
+
                 var teams = context.TeamStudents.Where(a => a.studentId == student_id);
                 var list = new List<object>();
 
@@ -154,10 +160,17 @@ namespace NBackend.Biz
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
             var year = int.Parse(body["year"]);
-            var team_name = body["name"];
+            var team_name = body["team_name"];
 
             using (var context = new NBackendContext())
             {
+                var any_section = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id
+                                                            && a.semester == semester && a.year == year);
+                if (!any_section.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个班");
+                }
+
                 context.Teams.Add(new Team
                 {
                     secId = sec_id,
@@ -182,10 +195,22 @@ namespace NBackend.Biz
         {
             var body = Helper.JsonConverter.Decode(json);
             var team_id = int.Parse(body["team_id"]);
-            var student_id = int.Parse(body["student_id"]);
+            var student_id = int.Parse(body["user_id"]);
 
             using (var context = new NBackendContext())
             {
+                var any_team = context.Teams.Where(a => a.TeamId == team_id);
+                if (!any_team.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "没队伍啊");
+                }
+
+                var any_student = context.Students.Where(a => a.StudentId == student_id);
+                if (!any_student.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个人有问题啊");
+                }
+
                 context.TeamStudents.Add(new TeamStudent
                 {
                     teamId = team_id,

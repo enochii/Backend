@@ -20,6 +20,13 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
+                var any_section = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id
+                                            && a.semester == semester && a.year == year);
+                if (!any_section.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个班有问题啊");
+                }
+
                 var coursewares = context.CourseWares.Where(a => a.secId == sec_id && a.courseId == course_id
                                                             && a.semester == semester && a.year == year);
                 var list = new List<object>();
