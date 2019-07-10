@@ -25,6 +25,32 @@ namespace NBackend.Controllers
             return Biz.CoursewareBiz.GetAllCoursewares(json);
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/CourseWare")]
+        public object PostCourseWares(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.CoursewareBiz.PostCourseware(json);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete]
+        [Route("api/CourseWare_Removement")]
+        public object DeleteCourseWares(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.CoursewareBiz.DeleteCourseware(json);
+        }
+
         // GET: api/CourseWares/5
         [ResponseType(typeof(CourseWare))]
         public async Task<IHttpActionResult> GetCourseWare(int id)
@@ -121,6 +147,8 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpOptions]
         [Route("api/CourseWares")]
+        [Route("api/CourseWare_Removement")]
+        [Route("api/CourseWare")]
         public object Options()
         {
             return null;

@@ -10,6 +10,7 @@ namespace NBackend.Biz
 {
     public class BroadcastBiz
     {
+        //获取某个班的作业
         const int TYPE_JOB = 1, TYPE_ACTIVITY = 2;
         const int SCOPE_CLASS = 1, SCOPE_GOLBAL = 2;
 
@@ -25,6 +26,13 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
+                var any_section = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id
+                                            && a.semester == semester && a.year == year);
+                if (!any_section.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个班有问题啊");
+                }
+
                 var homework = context.Broadcasts.Where(a => a.secId == sec_id && a.courseId == course_id
                                                  && a.semester == semester && a.year == year);
                 var list = new List<object>();

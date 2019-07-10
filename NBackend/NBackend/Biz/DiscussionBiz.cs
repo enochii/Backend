@@ -1,139 +1,193 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Web;
-//using NBackend.Helper;
-//using NBackend.Models;
-//using System.Data.Entity;
-//namespace NBackend.Biz
-//{
-//    public class DiscussionBiz
-//    {
-//        public static object GetDiscussions(object json)
-//        {
-//            var body = Helper.JsonConverter.Decode(json);
-//            var sec_id = int.Parse(body["sec_id"]);
-//            var course_id = int.Parse(body["course_id"]);
-//            var semester = body["semester"];
-//            var year = int.Parse(body["year"]);
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using NBackend.Helper;
+using NBackend.Models;
+using System.Data.Entity;
+using System.Data.Entity.Validation;
 
-//            using (var context = new NBackendContext())
-//            {
-//                var discussions = context.Disscussions.Where(a => a.courseId == course_id && a.secId == sec_id
-//                                                            && a.semester == semester && a.year == year && a.comments != null);
-//                var list = new List<object>();
+namespace NBackend.Biz
+{
+    public class DiscussionBiz
+    {
+        public static object GetDiscussions(object json)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            var sec_id = int.Parse(body["sec_id"]);
+            var course_id = int.Parse(body["course_id"]);
+            var semester = body["semester"];
+            var year = int.Parse(body["year"]);
 
-//                foreach (var a_discussion in discussions)
-//                {
-//                    var user_info = context.Users.Single(a => a.Id == a_discussion.userId);
+            using (var context = new NBackendContext())
+            {
+                var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
+                if (!a_class.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "不存在这个班级");
+                }
 
-//                    list.Add(new
-//                    {
-//                        discussion_id = a_discussion.DisscussionId,
-//                        user_id = user_info.Id,
-//                        user_name = user_info.user_name,
-//                        role = user_info.role,
-//                        content = a_discussion.content,
-//                        time = a_discussion.time,
-//                        //question_id = a_discussion.Disscussion_DisscussionId
-//                    });
-//                }
-//                var data = new
-//                {
-//                    questions = list
-//                };
+                var discussions = context.Discussions.Where(a => a.courseId == course_id && a.secId == sec_id
+                                                            && a.semester == semester && a.year == year && a.is_comment == false);
+                var list = new List<object>();
 
-//                return Helper.JsonConverter.BuildResult(data);
+                if (discussions.Any())
+                {
+                    foreach (var a_discussion in discussions)
+                    {
+                        var user_info = context.Users.Single(a => a.Id == a_discussion.userId);
 
-//            }
-//        }
+                        list.Add(new
+                        {
+                            discussion_id = a_discussion.DisscussionId,
+                            user_id = user_info.Id,
+                            user_name = user_info.user_name,
+                            role = user_info.role,
+                            content = a_discussion.content,
+                            time = a_discussion.time,
+                            //question_id = a_discussion.Discussion_DisscussionId
+                        });
+                    }
+                }
+                var data = new
+                {
+                    questions = list
+                };
 
-//        public static object GetOneDiscussion(object json)
-//        {
-//            var body = Helper.JsonConverter.Decode(json);
-//            var discussion_id = int.Parse(body["discussion_id"]);
+                return Helper.JsonConverter.BuildResult(data);
 
-//            using (var context = new NBackendContext())
-//            {
-//                var the_discussion = context.Disscussions.Single(a => a.DisscussionId == discussion_id);
-//                var replys = the_discussion.comments;
-//                var list = new List<object>();
+            }
+        }
 
-//                foreach (var each_reply in replys)
-//                {
-//                    list.Add(new
-//                    {
-//                        discussion_id = each_reply.DisscussionId,
-//                        user_id = each_reply.userId,
-//                        user_name = context.Users.Single(a => a.Id == each_reply.userId),
-//                        content = each_reply.content,
-//                        time = each_reply.time,
-//                        question_id = the_discussion.DisscussionId
-//                    });
-//                }
+        public static object GetOneDiscussion(object json)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            var discussion_id = int.Parse(body["discussion_id"]);
 
-//                var data = new
-//                {
-//                    discussion_id = the_discussion.DisscussionId,
-//                    user_id = the_discussion.userId,
-//                    user_name = context.Users.Single(a=>a.Id==the_discussion.userId),
-//                    content = the_discussion.content,
-//                    time = the_discussion.time,
-//                    replys = list
-//                };
+            using (var context = new NBackendContext())
+            {
+                var a_discussion = context.Discussions.Where(a => a.DisscussionId == discussion_id);
+                if (!a_discussion.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个讨论不存在");
+                }
+                var the_discussion = a_discussion.Single();
+                var replys = the_discussion.comments;
+                var list = new List<object>();
 
-//                return Helper.JsonConverter.BuildResult(data);
-//            }
-//        }
+                if (the_discussion.is_comment == true)
+                {
+                    foreach (var each_reply in replys)
+                    {
+                        list.Add(new
+                        {
+                            discussion_id = each_reply.DisscussionId,
+                            user_id = each_reply.userId,
+                            user_name = context.Users.Single(a => a.Id == each_reply.userId).user_name,
+                            role = context.Users.Single(a => a.Id == each_reply.userId).role,
+                            content = each_reply.content,
+                            time = each_reply.time,
+                            question_id = the_discussion.DisscussionId
+                        });
+                    }
+                }
 
-//        public static object PostDiscussion(object json)
-//        {
-//            var body = Helper.JsonConverter.Decode(json);
-//            var sec_id = int.Parse(body["sec_id"]);
-//            var course_id = int.Parse(body["course_id"]);
-//            var semester = body["semester"];
-//            var year = int.Parse(body["year"]);
-//            var user_id = int.Parse(body["user_id"]);
-//            var content = body["content"];
-//            var time = body["time"];
-//            var question_id = int.Parse(body["question_id"]);
-//            var discussion_id = int.Parse(body["discussion_id"]);
+                var data = new
+                {
+                    discussion_id = the_discussion.DisscussionId,
+                    user_id = the_discussion.userId,
+                    user_name = context.Users.Single(a => a.Id == the_discussion.userId),
+                    role = context.Users.Single(a => a.Id == the_discussion.userId).role,
+                    content = the_discussion.content,
+                    time = the_discussion.time,
+                    replys = list
+                };
 
-//            using (var context = new NBackendContext())
-//            {
-//                if (question_id == 0)
-//                {
-//                    context.Disscussions.Add(new Disscussion
-//                    {
-//                        secId = sec_id,
-//                        courseId = course_id,
-//                        semester = semester,
-//                        year = year,
-//                        userId = user_id,
-//                        content = content,
-//                        time = time,
-//                        DisscussionId = discussion_id
-//                    });
+                return Helper.JsonConverter.BuildResult(data);
+            }
+        }
 
-//                }
-//                else
-//                {
-//                    context.Disscussions.Single(a => a.DisscussionId == question_id).comments.Add(new Disscussion
-//                    {
-//                        secId = sec_id,
-//                        courseId = course_id,
-//                        semester = semester,
-//                        year = year,
-//                        userId = user_id,
-//                        content = content,
-//                        time = time,
-//                        comments = null,
-//                        //DisscussionId = discussion_id
-//                    });
-//                }
-//                context.SaveChanges();
-//                return Helper.JsonConverter.BuildResult(null);
-//            }
-//        }
-//    }
-//}
+        public static object PostDiscussion(object json)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            var sec_id = int.Parse(body["sec_id"]);
+            var course_id = int.Parse(body["course_id"]);
+            var semester = body["semester"];
+            var year = int.Parse(body["year"]);
+            var user_id = int.Parse(body["user_id"]);
+            var content = body["content"];
+            var time = body["time"];
+            var question_id = int.Parse(body["question_id"]);
+            //var discussion_id = int.Parse(body["discussion_id"]);
+
+            using (var context = new NBackendContext())
+            {
+                var any_user = context.Users.Where(a => a.Id == user_id);
+                if (!any_user.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "这个人有问题");
+                }
+
+                Discussion new_discussion = new Discussion();
+                if (question_id == 0)
+                {
+                    new_discussion = new Discussion
+                    {
+                        secId = sec_id,
+                        courseId = course_id,
+                        semester = semester,
+                        year = year,
+                        userId = user_id,
+                        content = content,
+                        time = time,
+                        is_comment = false,
+                        //comments = new List<Discussion>()
+                        //comments = null,
+                        //DisscussionId = discussion_id
+                    };
+                    //DisscussionId = discussion_id
+                    context.Discussions.Add(new_discussion);
+
+                }
+                else
+                {
+                    var any_discussion = context.Discussions.Where(a => a.DisscussionId == question_id);
+                    if (!any_discussion.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "这个问题不对啊");
+                    }
+
+                    new_discussion = new Discussion
+                    {
+                        secId = sec_id,
+                        courseId = course_id,
+                        semester = semester,
+                        year = year,
+                        userId = user_id,
+                        content = content,
+                        time = time,
+                        comments = null,
+                        is_comment = true
+                        //DisscussionId = discussion_id
+                    };
+                    any_discussion.Single().comments.Add(new_discussion);
+                }
+
+                try
+                {
+                    // 写数据库 
+                    context.SaveChanges();
+                }
+                catch (DbEntityValidationException dbEx)
+                {
+
+                }
+
+                return Helper.JsonConverter.BuildResult(new
+                {
+                    discussion_id = new_discussion.DisscussionId
+                });
+            }
+        }
+    }
+}

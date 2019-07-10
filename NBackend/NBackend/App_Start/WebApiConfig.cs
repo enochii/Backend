@@ -12,7 +12,7 @@ namespace NBackend
         {
             // Web API 配置和服务
             config.Filters.Add(new AuthorizeAttribute());
-
+            GlobalConfiguration.Configuration.Formatters.XmlFormatter.SupportedMediaTypes.Clear();
             // Web API 路由
             config.MapHttpAttributeRoutes();
 
