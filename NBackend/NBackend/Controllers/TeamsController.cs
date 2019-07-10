@@ -55,7 +55,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("api/teams")]
+        [Route("api/team")]
         public object PostTeams(object json)
         {
             String token = Request.Headers.Authorization.Parameter;

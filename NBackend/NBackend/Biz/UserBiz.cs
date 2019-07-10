@@ -31,7 +31,7 @@ namespace NBackend.Biz
 
             var user_name = body["user_name"];
             var department = body["department"];
-            var password = body["password"];
+            //var password = body["password"];
             var phone_number = body["phone_number"];
             var email = body["email"];
             var avatar = body["avatar"];
@@ -39,11 +39,42 @@ namespace NBackend.Biz
 
             user.user_name = user_name;
             user.department = department;
-            user.password = password;
+            //user.password = password;
             user.phone_number = phone_number;
             user.mail = email;
             user.avatar = avatar;
             user.role = role;
+
+            int grade = -1;
+            string job_title;
+            if (user.role.Equals("student"))
+            {
+                grade = int.Parse(body["grade"]);
+                var q = ctx.Students.Where(stu => stu.StudentId == user.Id);
+                if (!q.Any())
+                {
+                    return JsonConverter.Error(400, "没有这个人");
+                }
+                else
+                {
+                    var stu = q.Single();
+                    stu.grade = grade;
+                }
+            }
+            else
+            {
+                job_title = body["job_title"];
+                var q = ctx.Teachers.Where(tea=>tea.TeacherId == user.Id);
+                if (!q.Any())
+                {
+                    return JsonConverter.Error(400, "没有这个人");
+                }
+                else
+                {
+                    var tea = q.Single();
+                    tea.job_title = job_title;
+                }
+            }
 
             ctx.SaveChanges();
 

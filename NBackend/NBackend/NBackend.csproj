@@ -195,6 +195,7 @@
     <Compile Include="Biz\BroadcastBiz.cs" />
     <Compile Include="Biz\ClassBiz.cs" />
     <Compile Include="Biz\CoursewareBiz.cs" />
+    <Compile Include="Biz\ExamBiz.cs" />
     <Compile Include="Biz\DiscussionBiz.cs" />
     <Compile Include="Biz\TeamBiz.cs" />
     <Compile Include="Biz\TwitterBiz.cs" />

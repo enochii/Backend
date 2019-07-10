@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using NBackend.Biz;
 using NBackend.Models;
 
 namespace NBackend.Controllers
@@ -18,103 +19,79 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         // GET: api/Exams
-        public IQueryable<Exam> GetExams()
+        //[AllowAnonymous]
+        //[HttpGet]
+        //[Route("api/exams")]
+        //public IQueryable<Exam> GetExams()
+        //{
+        //    return db.Exams;
+        //}
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/exams")]
+        public object PostExam(object json)
         {
-            return db.Exams;
+            var token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.postExam(token, json);
         }
 
-        // GET: api/Exams/5
-        [ResponseType(typeof(Exam))]
-        public async Task<IHttpActionResult> GetExam(int id)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/class_exams")]
+        public object GetClassExams(object json)
         {
-            Exam exam = await db.Exams.FindAsync(id);
-            if (exam == null)
-            {
-                return NotFound();
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            return Ok(exam);
+            return ExamBiz.getExamsOfClass(token, json);
         }
 
-        // PUT: api/Exams/5
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutExam(int id, Exam exam)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/exam_questions")]
+        public object GetExamQuestions(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            if (id != exam.ExamId)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(exam).State = EntityState.Modified;
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ExamExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            return ExamBiz.getQuestionsOfExam(token, json);
         }
 
-        // POST: api/Exams
-        [ResponseType(typeof(Exam))]
-        public async Task<IHttpActionResult> PostExam(Exam exam)
+        //题库相关
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/course_questions")]
+        public object GetCourseQuestions(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.Exams.Add(exam);
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (ExamExists(exam.ExamId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtRoute("DefaultApi", new { id = exam.ExamId }, exam);
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.getQuestionsOfCourse(token, json);
         }
 
-        // DELETE: api/Exams/5
-        [ResponseType(typeof(Exam))]
-        public async Task<IHttpActionResult> DeleteExam(int id)
+        //post一个题目
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/questions")]
+        public object postQuestion(object json)
         {
-            Exam exam = await db.Exams.FindAsync(id);
-            if (exam == null)
-            {
-                return NotFound();
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            db.Exams.Remove(exam);
-            await db.SaveChangesAsync();
-
-            return Ok(exam);
+            return ExamBiz.postExam(token, json);
+        }
+        //删除一个题目
+        [AllowAnonymous]
+        [HttpDelete]
+        [Route("api/questions")]
+        public object deleteQuestion(object json)
+        {
+            return json;
+        }
+        //修改一个题目
+        [AllowAnonymous]
+        [HttpPut]
+        [Route("api/questions")]
+        public object putQuestion(object json)
+        {
+            return json;
         }
 
         protected override void Dispose(bool disposing)
@@ -129,6 +106,13 @@ namespace NBackend.Controllers
         private bool ExamExists(int id)
         {
             return db.Exams.Count(e => e.ExamId == id) > 0;
+        }
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/exams")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

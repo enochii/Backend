@@ -75,9 +75,9 @@ namespace NBackend.Controllers
             return UserBiz.getFollowers(json);
         }
 
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
-        [Route("api/following")]
+        [Route("api/followings")]
         public object GetFollowing(object json)
         {
             return UserBiz.getFollowing(json);
@@ -120,6 +120,5 @@ namespace NBackend.Controllers
         {
             return null;
         }
-
     }
 }

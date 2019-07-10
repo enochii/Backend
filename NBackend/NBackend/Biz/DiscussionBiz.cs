@@ -97,6 +97,7 @@ namespace NBackend.Biz
             var content = body["content"];
             var time = body["time"];
             var question_id = int.Parse(body["question_id"]);
+            var discussion_id = int.Parse(body["discussion_id"]);
 
             using (var context = new NBackendContext())
             {
@@ -111,6 +112,7 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
+                        DisscussionId = discussion_id
                     });
 
                 }
@@ -125,7 +127,8 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
-                        comments = null
+                        comments = null,
+                        //DisscussionId = discussion_id
                     });
                 }
                 context.SaveChanges();

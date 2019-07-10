@@ -424,7 +424,7 @@ namespace NBackend.Biz
             var avatar = body["avatar"];
             var start_week = int.Parse(body["start_week"]);
             var end_week = int.Parse(body["end_week"]);
-            var sec_id = int.Parse(body["sec_id"]);
+           // var sec_id = int.Parse(body["sec_id"]);
 
             using (var context = new NBackendContext())
             {
@@ -432,7 +432,7 @@ namespace NBackend.Biz
                                                             && a.semester == semester && a.year == year);
                 context.Sections.Add(new Section
                 {
-                    SecId = sec_id,
+                    //SecId = sec_id,
                     courseId = course_id,
                     semester = semester,
                     year = year,

@@ -19,7 +19,7 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         [HttpPost]
-        [Route("api/twitters")]
+        [Route("api/twitter")]
         public object PostTwi(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
@@ -84,6 +84,14 @@ namespace NBackend.Controllers
         private bool TwitterExists(int id)
         {
             return db.Twitters.Count(e => e.TwitterId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/twitters")]
+        public object Options()
+        {
+            return null;
         }
     }
 }
