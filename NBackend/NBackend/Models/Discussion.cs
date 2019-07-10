@@ -7,16 +7,16 @@ using System.Web;
 
 namespace NBackend.Models
 {
-    public class Disscussion
+    public class Discussion
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        
         [Key]
         public int DisscussionId { get; set; }
 
         public virtual ICollection<Disscussion> comments { get; set; }
-        
 
-        public Disscussion()
+
+        public Discussion()
         {
             this.comments = new List<Disscussion>();
         }

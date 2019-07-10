@@ -92,6 +92,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpOptions]
+        [Route("api/twitter")]
         [Route("api/twitters")]
         public object Options()
         {

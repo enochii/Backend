@@ -25,7 +25,7 @@ namespace NBackend.Models
         [Required]
         [MaxLength(20)]
         public string user_name { get; set; }
-        [Required]
+        
         [MaxLength(20)]
         public string department { get; set; }
         [Required]
@@ -36,9 +36,9 @@ namespace NBackend.Models
         [MinLength(11)]
         public string phone_number { get; set; }
         [Required]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string mail { get; set; }
-        [Required]
+     
         [MaxLength(100)]
         public string avatar { get; set; }
 

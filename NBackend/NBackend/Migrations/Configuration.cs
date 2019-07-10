@@ -20,54 +20,55 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
-            //context.Users.AddOrUpdate(
-            //  p => p.user_name,
-            //  new Models.User {
-            //      Id = 000000,
-            //      user_name = "袁阿姨",
-            //      department = "软件学院",
-            //      password = "123456",
-            //      phone_number = "13112525575",
-            //      mail = "144@11.com",
-            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      role = "teacher"
-            //  },
-            //  new Models.User
+            context.Users.AddOrUpdate(
+              p => p.user_name,
+              new Models.User
+              {
+                  Id = 000000,
+                  user_name = "袁阿姨",
+                  department = "软件学院",
+                  password = "123456",
+                  phone_number = "13112525575",
+                  mail = "144@11.com",
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  role = "teacher"
+              },
+            new Models.User
+            {
+                Id = 1651162,
+                user_name = "施程航",
+                department = "软件学院",
+                password = "123456",
+                phone_number = "13112525575",
+                mail = "144@11.com",
+                avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                role = "teacher"
+            }
+            );
+            //context.Courses.AddOrUpdate(
+            //  p => p.course_name,
+            //  new Models.Course
             //  {
-            //      Id = 000001,
-            //      user_name = "穆院长",
-            //      department = "软件学院",
-            //      password = "123456",
-            //      phone_number = "13112525575",
-            //      mail = "144@11.com",
+            //      CourseId = 100000,
+            //      course_name = "数据结构",
+            //      credits = 4,
             //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      role = "teacher"
+            //      description = "冲冲冲！"
+            //  },
+            //  new Models.Course
+            //  {
+            //      CourseId = 000001,
+            //      course_name= "数据库课程设计",
+            //      credits = 1,
+            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+            //      description = "袁阿姨真无敌！"
             //  }
             //);
-            context.Courses.AddOrUpdate(
-              p => p.course_name,
-              new Models.Course
-              {
-                  CourseId = 100000,
-                  course_name = "数据结构",
-                  credits = 4,
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                  description = "冲冲冲！"
-              },
-              new Models.Course
-              {
-                  CourseId = 000001,
-                  course_name= "数据库课程设计",
-                  credits = 1,
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                  description = "袁阿姨真无敌！"
-              }
-            );
             //context.SectionTimes.AddOrUpdate(
             //  p => p.SectionTimeId,
             //  new Models.SectionTime
             //  {
-            //      SectionTimeId=0000,
+            //      SectionTimeId = 0000,
             //      //day = "周一",
             //      start_section = 1,
             //      length = 2,
@@ -145,6 +146,27 @@ namespace NBackend.Migrations
             //      courseId = 000001,
             //      semester = "Spring",
             //      year = 2019,
+            //  }
+            //);
+
+            //context.Discussions.AddOrUpdate(
+            //  p => p.secId,
+            //  new Models.Discussion
+            //  {
+            //      secId = 0,
+            //      courseId = 0,
+            //      semester = "Spring",
+            //      year = 2019,
+
+            //      userId = 1753127,
+            //      content="绩点太高了",
+            //      time = "1997.11.22 12:01"
+
+            //      //scope="整本书",
+            //      //title="重修试卷",
+            //      //type = 1,
+            //      //start_time = "1997.11.22 12:01",
+            //      //end_time = "1997.11.22 12:01",
             //  }
             //);
 
