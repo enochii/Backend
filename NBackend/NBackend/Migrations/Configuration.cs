@@ -20,31 +20,46 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
-            context.Users.AddOrUpdate(
-              p => p.user_name,
-              new Models.User
-              {
-                  Id = 000000,
-                  user_name = "袁阿姨",
-                  department = "软件学院",
-                  password = "123456",
-                  phone_number = "13112525575",
-                  mail = "144@11.com",
-                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                  role = "teacher"
-              },
-            new Models.User
-            {
-                Id = 1651162,
-                user_name = "施程航",
-                department = "软件学院",
-                password = "123456",
-                phone_number = "13112525575",
-                mail = "144@11.com",
-                avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-                role = "teacher"
-            }
-            );
+
+            context.Discussions.AddOrUpdate(
+                  p => p.secId,
+                  new Models.Discussion
+                  {
+                      secId = 1,
+                      courseId = 2,
+                      semester = "Spring",
+                      year = 2019,
+                      userId=1651162,
+                      content="何立仁明天讲docker",
+                      time = "2019.07.10 18:00",
+                      is_comment=false
+                  }
+                );
+            //context.Users.AddOrUpdate(
+            //  p => p.user_name,
+            //  new Models.User
+            //  {
+            //      Id = 000000,
+            //      user_name = "袁阿姨",
+            //      department = "软件学院",
+            //      password = "123456",
+            //      phone_number = "13112525575",
+            //      mail = "144@11.com",
+            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+            //      role = "teacher"
+            //  },
+            //new Models.User
+            //{
+            //    Id = 1651162,
+            //    user_name = "施程航",
+            //    department = "软件学院",
+            //    password = "123456",
+            //    phone_number = "13112525575",
+            //    mail = "144@11.com",
+            //    avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+            //    role = "teacher"
+            //}
+            //);
             //context.Courses.AddOrUpdate(
             //  p => p.course_name,
             //  new Models.Course
@@ -159,7 +174,7 @@ namespace NBackend.Migrations
             //      year = 2019,
 
             //      userId = 1753127,
-            //      content="绩点太高了",
+            //      content = "绩点太高了",
             //      time = "1997.11.22 12:01"
 
             //      //scope="整本书",

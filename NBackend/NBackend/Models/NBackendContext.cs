@@ -45,7 +45,7 @@ namespace NBackend.Models
 
         public System.Data.Entity.DbSet<NBackend.Models.Question> Questions { get; set; }
 
-        public System.Data.Entity.DbSet<NBackend.Models.Disscussion> Disscussions { get; set; }
+        //public System.Data.Entity.DbSet<NBackend.Models.Disscussion> Disscussions { get; set; }
 
         public System.Data.Entity.DbSet<NBackend.Models.Broadcast> Broadcasts { get; set; }
 
@@ -68,6 +68,8 @@ namespace NBackend.Models
         public System.Data.Entity.DbSet<NBackend.Models.MultiSectionTimes> MultiSectionTimes { get; set; }
 
         public System.Data.Entity.DbSet<NBackend.Models.Discussion> Discussions { get; set; }
+
+        //public System.Data.Entity.DbSet<NBackend.Models.Discussion> Discussions { get; set; }
 
         //public System.Data.Entity.DbSet<NBackend.Models.MultiSectionsTime> MultiSectionsTimes { get; set; }
     }

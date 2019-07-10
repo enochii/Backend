@@ -9,17 +9,11 @@ namespace NBackend.Models
 {
     public class Discussion
     {
-        
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int DisscussionId { get; set; }
 
-        public virtual ICollection<Disscussion> comments { get; set; }
-
-
-        public Discussion()
-        {
-            this.comments = new List<Disscussion>();
-        }
+        public virtual ICollection<Discussion> comments { get; set; }
 
         // 班级外键
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
@@ -55,5 +49,8 @@ namespace NBackend.Models
         [MinLength(16)]
         //1997.11.12 12:01
         public string time { get; set; }
+
+        [Required]
+        public bool is_comment { get; set; }
     }
 }
