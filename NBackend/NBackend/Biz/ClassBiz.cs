@@ -209,7 +209,8 @@ namespace NBackend.Biz
                                         SecId = each_class.SecId,
                                         courseId = each_class.courseId,
                                         year = each_class.year,
-                                        semester = each_class.semester
+                                        semester = each_class.semester,
+                                        score = each_taking.score
                                     });
                 //if (!some_classes.Any())
                 //{
@@ -250,6 +251,7 @@ namespace NBackend.Biz
                         //building = a_class.building,
                         //room_number = a_class.room_numer,
                         //section_time_id = a_class.section_timeId,
+                        score = a_class.score,
                         time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
                         avatar = the_teacher.avatar,
                         user_name = the_teacher.teacher_name,
@@ -268,9 +270,9 @@ namespace NBackend.Biz
         }
 
         //学生获取正在申请进入的班级
-        public static object GetWaitingClass(object json, string token)
+        public static object GetWaitingClass(string token)
         {
-            var body = Helper.JsonConverter.Decode(json);
+            //var body = Helper.JsonConverter.Decode(json);
             var student_id = Helper.JwtManager.DecodeToken(token);
 
             using (var context = new NBackendContext())
@@ -609,6 +611,72 @@ namespace NBackend.Biz
                     context.SaveChanges();
                     return Helper.JsonConverter.BuildResult(null);
                 }
+            }
+        }
+
+        public static object GetCourses()
+        {
+            using (var context = new NBackendContext())
+            {
+                var some_courses = context.Courses;
+                var list = new List<object>();
+
+                foreach (var each_course in some_courses)
+                {
+                    list.Add(new
+                    {
+                        course_id = each_course.CourseId,
+                        course_name = each_course.course_name
+                    });
+                }
+
+                var data = new
+                {
+                    courses = list
+                };
+
+                return Helper.JsonConverter.BuildResult(data);
+            }
+        }
+
+        public static object GetStudents(object json)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            var sec_id = int.Parse(body["sec_id"]);
+            var course_id = int.Parse(body["course_id"]);
+            var semester = body["semester"];
+            var year = int.Parse(body["year"]);
+
+            using (var context = new NBackendContext())
+            {
+                var some_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                            && a.semester == semester && a.year == year);
+                var list = new List<object>();
+
+                foreach (var each_student in some_students)
+                {
+                    var user_info = context.Users.Where(a => a.Id == each_student.StudentId);
+                    if (!user_info.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "这个人有问题");
+                    }
+                    var the_user_info = user_info.Single();
+                    list.Add(new
+                    {
+                        user_id = the_user_info.Id,
+                        user_name = the_user_info.user_name,
+                        department = the_user_info.department,
+                        grade = context.Students.Single(a => a.StudentId == each_student.StudentId).grade,
+                        avatar = the_user_info.avatar
+                    });
+                }
+
+                var data = new
+                {
+                    students = list
+                };
+
+                return Helper.JsonConverter.BuildResult(data);
             }
         }
 
