@@ -33,6 +33,18 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("api/attendance_summary")]
+        public object GetAttendanceSummary(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.AttendanceBiz.GetAttendanceSummary(json, token);
+        }
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/attendance_records")]
         public object PostAttendanceRecords(object json)
         {
@@ -176,6 +188,7 @@ namespace NBackend.Controllers
         [Route("api/attendance")]
         [Route("api/attendance_records")]
         [Route("api/new_attendance")]
+        [Route("api/attendance_summary")]
         public object Options()
         {
             return null;

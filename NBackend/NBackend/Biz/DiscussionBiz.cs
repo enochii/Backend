@@ -166,7 +166,6 @@ namespace NBackend.Biz
                         userId = user_id,
                         content = content,
                         time = time,
-                        comments = null,
                         is_comment = true
                         //DisscussionId = discussion_id
                     };
@@ -189,5 +188,39 @@ namespace NBackend.Biz
                 });
             }
         }
+
+        public static object GetDiscussionSummary(object json, string token)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            //var sec_id = int.Parse(body["sec_id"]);
+            //var course_id = int.Parse(body["course_id"]);
+            var semester = body["semester"];
+            var year = int.Parse(body["year"]);
+            var user_id = Helper.JwtManager.DecodeToken(token);
+
+            using (var context = new NBackendContext())
+            {
+                var some_discussions = context.Discussions.Where(a => a.userId == user_id && a.semester == semester && a.year == year);
+                var some_courses = (from each_discussions in some_discussions
+                                    group each_discussions by each_discussions.courseId into dgroups
+                                    select new
+                                    {
+                                        course_id=dgroups.Key,
+                                        //course_name = some_discussions.First(a=>a.courseId==dgroups.Key).n,
+                                        course_discussion_num = some_discussions.Where(a=>a.courseId==dgroups.Key).Count()
+                                    } into discussion_courses
+                                    orderby discussion_courses.course_discussion_num descending 
+                                    select discussion_courses) ;
+                var data = new
+                {
+                    total_discussions = some_discussions.Count(),
+                    total_courses = some_courses.Count(),
+                    max_course_name = context.Courses.Single(a=>a.CourseId==some_courses.FirstOrDefault().course_id).course_name
+                };
+
+                return Helper.JsonConverter.BuildResult(data);
+            }
+        }
+
     }
 }
