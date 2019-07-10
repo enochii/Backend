@@ -37,6 +37,25 @@ namespace NBackend.Controllers
 
             return ExamBiz.postExam(token, json);
         }
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/exam_creation")]
+        public object PostExamQuestions(object json)
+        {
+            var token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.postQuestionOfExam(token, json);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/exam_results")]
+        public object GetExamResult(object json)
+        {
+            var token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.getExamResult(token, json);
+        }
 
         [AllowAnonymous]
         [HttpPost]
@@ -84,8 +103,7 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         public object DeleteQuestion(object json)
         {
-            var token = Request.Headers.Authorization.Parameter;
-            return ExamBiz.putQuestion(token, json);
+            return json;
         }
         //修改一个题目
         [AllowAnonymous]

@@ -9,7 +9,7 @@ namespace NBackend.Models
 {
     public class Team
     {
-        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int TeamId { get; set; }
 

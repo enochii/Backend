@@ -21,47 +21,48 @@ namespace NBackend.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //
-            //context.Users.AddOrUpdate(
-            //  p => p.user_name,
-            //  new Models.User {
-            //      Id = 000000,
-            //      user_name = "Ô¬°¢ÒÌ",
-            //      department = "Èí¼þÑ§Ôº",
-            //      password = "123456",
-            //      phone_number = "13112525575",
-            //      mail = "144@11.com",
-            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      role = "teacher"
-            //  },
-            //  new Models.User
-            //  {
-            //      Id = 000001,
-            //      user_name = "ÄÂÔº³¤",
-            //      department = "Èí¼þÑ§Ôº",
-            //      password = "123456",
-            //      phone_number = "13112525575",
-            //      mail = "144@11.com",
-            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      role = "teacher"
-            //  }
-            //);
+            context.Users.AddOrUpdate(
+              p => p.user_name,
+              new Models.User
+              {
+                  Id = 000000,
+                  user_name = "Ô¬ï¿½ï¿½ï¿½ï¿½",
+                  department = "ï¿½ï¿½ï¿½ï¿½Ñ§Ôº",
+                  password = "123456",
+                  phone_number = "13112525575",
+                  mail = "144@11.com",
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  role = "teacher"
+              },
+            new Models.User
+            {
+                Id = 1651162,
+                user_name = "Ê©ï¿½Ìºï¿½",
+                department = "ï¿½ï¿½ï¿½ï¿½Ñ§Ôº",
+                password = "123456",
+                phone_number = "13112525575",
+                mail = "144@11.com",
+                avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                role = "teacher"
+            }
+            );
             //context.Courses.AddOrUpdate(
             //  p => p.course_name,
             //  new Models.Course
             //  {
-            //      CourseId = 000000,
-            //      course_name = "Êý¾Ý¿â",
+            //      CourseId = 100000,
+            //      course_name = "ï¿½ï¿½ï¿½Ý½á¹¹",
             //      credits = 4,
             //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      description = "Ô¬°¢ÒÌÎÞµÐ£¡"
+            //      description = "ï¿½ï¿½ï¿½å£¡"
             //  },
             //  new Models.Course
             //  {
             //      CourseId = 000001,
-            //      course_name = "Êý¾Ý¿â¿Î³ÌÉè¼Æ",
+            //      course_name= "ï¿½ï¿½ï¿½Ý¿ï¿½Î³ï¿½ï¿½ï¿½ï¿½",
             //      credits = 1,
             //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      description = "Ô¬°¢ÒÌÕæÎÞµÐ£¡"
+            //      description = "Ô¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÞµÐ£ï¿½"
             //  }
             //);
             //context.SectionTimes.AddOrUpdate(
@@ -69,7 +70,7 @@ namespace NBackend.Migrations
             //new Models.SectionTime
             //{
             //    //SectionTimeId = 10001,
-            //    //day = "ÖÜÒ»",
+            //    //day = "ï¿½ï¿½Ò»",
             //    start_section = 1,
             //    length = 2
             //    //start_week = 1,
@@ -78,8 +79,18 @@ namespace NBackend.Migrations
             //},
             //  new Models.SectionTime
             //  {
-            //      //SectionTimeId = 10002,
-            //      //day = "ÖÜÒ»",
+            //      SectionTimeId = 0000,
+            //      //day = "ï¿½ï¿½Ò»",
+            //      start_section = 1,
+            //      length = 2,
+            //      //start_week = 1,
+            //      //end_week = 17,
+            //      //single_or_double = 1
+            //  },
+            //  new Models.SectionTime
+            //  {
+            //      SectionTimeId = 0001,
+            //      //day = "ï¿½ï¿½Ò»",
             //      start_section = 3,
             //      length = 2
             //      //    start_week = 1,
@@ -95,7 +106,7 @@ namespace NBackend.Migrations
             //      courseId=000000,
             //      semester = "Spring",
             //      year = 2019,
-            //      building = "¼ÃÊÂÂ¥",
+            //      building = "ï¿½ï¿½ï¿½ï¿½Â¥",
             //      room_numer = "516",
             //      //section_timeId = 0000,
             //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
@@ -106,7 +117,7 @@ namespace NBackend.Migrations
             //      courseId = 000001,
             //      semester = "Spring",
             //      year = 2019,
-            //      building = "¼ÃÊÂÂ¥",
+            //      building = "ï¿½ï¿½ï¿½ï¿½Â¥",
             //      room_numer = "516",
             //      //section_timeId = 0001,
             //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr"
@@ -118,13 +129,13 @@ namespace NBackend.Migrations
             //  new Models.Teacher
             //  {
             //      TeacherId=000000,
-            //      job_title = "½ÌÊÚ",
+            //      job_title = "ï¿½ï¿½ï¿½ï¿½",
             //      is_manager = false                
             //  },
             //  new Models.Teacher
             //  {
             //      TeacherId = 000001,
-            //      job_title = "½ÌÊÚ",
+            //      job_title = "ï¿½ï¿½ï¿½ï¿½",
             //      is_manager = false
             //  }
             //);
@@ -149,20 +160,27 @@ namespace NBackend.Migrations
             //  }
             //);
 
-            //    context.Disscussions.AddOrUpdate(
-            //      p => p.DisscussionId,
-            //      new Models.Disscussion
-            //      {
-            //          secId = 0,
-            //          courseId = 0,
-            //          semester = "spring",
-            //          year = 2019,
-            //          userId = 1753122,
-            //          content = "aaa",
-            //          time = "2019.12.1 01.01"
-            //      }
-            //    );
-            //}
+            //context.Discussions.AddOrUpdate(
+            //  p => p.secId,
+            //  new Models.Discussion
+            //  {
+            //      secId = 0,
+            //      courseId = 0,
+            //      semester = "Spring",
+            //      year = 2019,
+
+            //      userId = 1753127,
+            //      content="ï¿½ï¿½ï¿½ï¿½Ì«ï¿½ï¿½ï¿½ï¿½",
+            //      time = "1997.11.22 12:01"
+
+            //      //scope="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+            //      //title="ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾ï¿½",
+            //      //type = 1,
+            //      //start_time = "1997.11.22 12:01",
+            //      //end_time = "1997.11.22 12:01",
+            //  }
+            //);
+
         }
     }
 }

@@ -9,7 +9,7 @@ namespace NBackend.Models
 {
     public class SectionTime
     {
-        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int SectionTimeId { get; set; }
 

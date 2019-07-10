@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -204,6 +204,7 @@
     <Compile Include="Controllers\BroadcastsController.cs" />
     <Compile Include="Controllers\CoursesController.cs" />
     <Compile Include="Controllers\CourseWaresController.cs" />
+    <Compile Include="Controllers\DiscussionsController.cs" />
     <Compile Include="Controllers\DisscussionsController.cs" />
     <Compile Include="Controllers\ExamQuestionsController.cs" />
     <Compile Include="Controllers\ExamsController.cs" />
@@ -272,11 +273,20 @@
     <Compile Include="Migrations\201907091535283_Auto-Generate.Designer.cs">
       <DependentUpon>201907091535283_Auto-Generate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907100705078_try.cs" />
+    <Compile Include="Migrations\201907100705078_try.Designer.cs">
+      <DependentUpon>201907100705078_try.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907100720594_Discussion.cs" />
+    <Compile Include="Migrations\201907100720594_Discussion.Designer.cs">
+      <DependentUpon>201907100720594_Discussion.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
     <Compile Include="Models\Course.cs" />
     <Compile Include="Models\CourseWare.cs" />
+    <Compile Include="Models\Discussion.cs" />
     <Compile Include="Models\Disscussion.cs" />
     <Compile Include="Models\DisscussionComment.cs" />
     <Compile Include="Models\Exam.cs" />
@@ -417,6 +427,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907091535283_Auto-Generate.resx">
       <DependentUpon>201907091535283_Auto-Generate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907100705078_try.resx">
+      <DependentUpon>201907100705078_try.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907100720594_Discussion.resx">
+      <DependentUpon>201907100720594_Discussion.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
