@@ -18,7 +18,8 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/total_classes")]
         public object GetSections()
         {
@@ -26,7 +27,8 @@ namespace NBackend.Controllers
             return Biz.ClassBiz.GetAllClasses();
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/one_class")]
         public object GetOneSection(object json)
         {
@@ -34,59 +36,94 @@ namespace NBackend.Controllers
             return Biz.ClassBiz.GetOneClass(json);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/part_classes")]
         public object GetPartSections(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
-            return Biz.ClassBiz.GetPartClass(json);
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.ClassBiz.GetPartClass(json, token);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/waiting_classes")]
         public object GetWaitingSections(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
-            return Biz.ClassBiz.GetWaitingClass(json);
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.ClassBiz.GetWaitingClass(json, token);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/waiting_students")]
         public object GetWaitingStudents(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.ClassBiz.GetWaitingStudents(json);
         }
 
-        [HttpGet]
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/class_details")]
         public object GetClassDetails(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.ClassBiz.GetOneClassDetails(json);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/student_class")]
         public object PostStudentClass(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
-            return Biz.ClassBiz.JoinClass(json);
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.ClassBiz.JoinClass(json,token);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/class")]
         public object PostSection(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.ClassBiz.CreateClass(json);
         }
 
+        [AllowAnonymous]
         [HttpPut]
-        [Route("api/Permission")]
+        [Route("api/permission")]
         public object PutApplication(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
             return Biz.ClassBiz.PermitApplication(json);
         }
 
@@ -196,6 +233,22 @@ namespace NBackend.Controllers
         private bool SectionExists(int id)
         {
             return db.Sections.Count(e => e.SecId == id) > 0;
+        }
+
+        [AllowAnonymous]
+        [HttpOptions]
+        [Route("api/total_classes")]
+        [Route("api/one_class")]
+        [Route("api/part_classes")]
+        [Route("api/waiting_classes")]
+        [Route("api/waiting_students")]
+        [Route("api/class_details")]
+        [Route("api/student_class")]
+        [Route("api/class")]
+        [Route("api/permission")]
+        public object Options()
+        {
+            return null;
         }
     }
 }

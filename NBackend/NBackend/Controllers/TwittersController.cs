@@ -48,7 +48,6 @@ namespace NBackend.Controllers
             }
             return Helper.JsonConverter.BuildResult(data);
 
-            return db.Twitters;
         }
 
 
