@@ -39,7 +39,7 @@ namespace NBackend.Biz
                 }
                 var data = new
                 {
-                    classes = list
+                    courswares = list
                 };
 
                 return Helper.JsonConverter.BuildResult(data);

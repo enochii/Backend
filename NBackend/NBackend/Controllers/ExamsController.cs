@@ -84,8 +84,12 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         public object DeleteQuestion(object json)
         {
+<<<<<<< HEAD
+            return json;
+=======
             var token = Request.Headers.Authorization.Parameter;
             return ExamBiz.putQuestion(token, json);
+>>>>>>> upstream/master
         }
         //修改一个题目
         [AllowAnonymous]
@@ -93,8 +97,12 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         public object PutQuestion(object json)
         {
+<<<<<<< HEAD
+            return json;
+=======
             var token = Request.Headers.Authorization.Parameter;
             return ExamBiz.deleteQuestion(token, json);
+>>>>>>> upstream/master
         }
 
         protected override void Dispose(bool disposing)
