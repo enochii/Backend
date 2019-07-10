@@ -23,7 +23,7 @@ namespace NBackend.Controllers
 
         // GET: api/Users
         [AllowAnonymous]
-        [HttpGet]
+        [HttpPost]
         [Route("api/users")]
         public object GetUsers(object json)
         {
@@ -51,7 +51,7 @@ namespace NBackend.Controllers
         //修改
         [AllowAnonymous]
         [HttpPost]
-        [Route("api/users")]
+        [Route("api/user_info")]
         public object UpdateInfo(object json)
         {
             //try
@@ -68,7 +68,7 @@ namespace NBackend.Controllers
 
         //关注功能相关
         [AllowAnonymous]
-        [HttpGet]
+        [HttpPost]
         [Route("api/followers")]
         public object GetFollowers(object json)
         {

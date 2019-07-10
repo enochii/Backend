@@ -44,25 +44,25 @@ namespace NBackend.Migrations
             //      role = "teacher"
             //  }
             //);
-            //context.Courses.AddOrUpdate(
-            //  p => p.course_name,
-            //  new Models.Course
-            //  {
-            //      CourseId = 000000,
-            //      course_name = "数据库",
-            //      credits = 4,
-            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      description = "袁阿姨无敌！"
-            //  },
-            //  new Models.Course
-            //  {
-            //      CourseId = 000001,
-            //      course_name = "数据库课程设计",
-            //      credits = 1,
-            //      avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
-            //      description = "袁阿姨真无敌！"
-            //  }
-            //);
+            context.Courses.AddOrUpdate(
+              p => p.course_name,
+              new Models.Course
+              {
+                  CourseId = 100000,
+                  course_name = "数据结构",
+                  credits = 4,
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  description = "冲冲冲！"
+              },
+              new Models.Course
+              {
+                  CourseId = 000001,
+                  course_name= "数据库课程设计",
+                  credits = 1,
+                  avatar = "http://p3d12u2wq.bkt.clouddn.com/FvvbTTdt98dOXonlvpdBBg8GdHDr",
+                  description = "袁阿姨真无敌！"
+              }
+            );
             //context.SectionTimes.AddOrUpdate(
             //  p => p.SectionTimeId,
             //  new Models.SectionTime

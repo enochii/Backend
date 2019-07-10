@@ -18,6 +18,7 @@ namespace NBackend.Controllers
     {
         private NBackendContext db = new NBackendContext();
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/twitter")]
         public object PostTwi(object json)
@@ -28,6 +29,7 @@ namespace NBackend.Controllers
         }
 
         // GET: api/Twitters
+        [AllowAnonymous]
         [HttpPost]
         [Route("api/twitters")]
         public object GetTwitters(object json)
@@ -51,6 +53,7 @@ namespace NBackend.Controllers
 
 
         //
+        [AllowAnonymous]
         [HttpDelete]
         [Route("api/twitters")]
         public object DeleteTwitters(object json)

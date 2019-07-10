@@ -23,7 +23,7 @@ namespace NBackend.Biz
             }
 
             var content = body["content"];
-            var time = body["content"];
+            var time = body["time"];
             var image = body["image"];
 
             Twitter twi = new Twitter
@@ -93,7 +93,7 @@ namespace NBackend.Biz
             NBackendContext ctx = new NBackendContext();
             int user_id = JwtManager.DecodeToken(token);
 
-            return ListToObj(getAllTwis(ctx, user_id));
+            return ListToObj(ctx, getAllTwis(ctx, user_id));
         }
 
         public static object getTwis(object json)
@@ -102,7 +102,7 @@ namespace NBackend.Biz
             Dictionary<string, string> body = JsonConverter.Decode(json);
             int user_id = int.Parse(body["user_id"]);
 
-            return ListToObj(getSelfTwis(ctx, user_id));
+            return ListToObj(ctx, getSelfTwis(ctx, user_id));
 
         }
 
@@ -133,15 +133,18 @@ namespace NBackend.Biz
             return q.ToList();
         }
 
-        private static List<object> ListToObj(List<Twitter> list)
+        private static List<object> ListToObj(NBackendContext ctx, List<Twitter> list)
         {
             List<object> ret = new List<object>();
             foreach(Twitter twi in list)
             {
+                User user = UserBiz.getUserById(ctx, twi.TwitterId);
                 ret.Add(new
                 {
                     twitter_id = twi.TwitterId,
                     user_id = twi.userId,
+                    user_name = user.user_name,
+                    avatar = user.avatar,
                     image = twi.image,
                     time = twi.time,
                     content = twi.content,

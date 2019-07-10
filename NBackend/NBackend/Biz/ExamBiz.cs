@@ -178,7 +178,7 @@ namespace NBackend.Biz
             return data;
         }
 
-        //获取某张试卷所有的题目
+        //获取某张试卷所有的题目，包括学生考试前后和老师查看
         public static object getQuestionsOfExam(string token, object json)
         {
             var body = Helper.JsonConverter.Decode(json);
@@ -442,7 +442,63 @@ namespace NBackend.Biz
             return questionHelper(token, json, PUT);
         }
 
-        //教师查看考试结果
+        //教师查看某场考试结果
+        public static object getExamResult(string token, object json)
+        {
+            int user_id = Helper.JwtManager.DecodeToken(token);
+            NBackendContext ctx = new NBackendContext();
+
+            User user = UserBiz.getUserById(ctx, user_id);
+            if (user.role.Equals("teacher_edu"))
+            {
+                return Helper.JsonConverter.Error(400, "你没有权限(＾Ｕ＾)ノ~ＹＯ");
+            }
+
+            var body = Helper.JsonConverter.Decode(json);
+            int exam_id = int.Parse(body["exam_id"]);
+
+            //通过exam取出班级，再取出班级的所有人
+            //真糖！
+            var qstus = ctx.Exams.Join(ctx.Takes, ex => ex.Section, take => take.Section,
+                (ex, take) => new { exam_id, take.Student }
+                );
+            //获得参加本场考试的学生的信息和分数
+            var qstus_taken = qstus.Join(ctx.TakesExams, stu => stu.Student, te => te.Student,
+                (stu, te) => new { stu, te.score }
+                ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score });
+
+            //拿到所有学生
+            var qstus_only = qstus.Select(stu => stu.Student);
+            var qstus_not_taken = qstus_only.Except(qstus_taken.Select(stu_score => stu_score.Student));
+
+            List<object> all_stu_score= new List<object>();
+            //User student = getUserById()
+
+            foreach(var stu  in qstus_taken)
+            {
+                User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
+                all_stu_score.Add(new
+                {
+                    student_name = stu.Student.StudentId,
+                    student_id = _user.user_name,
+                    score = stu.score
+                });
+            }
+            foreach (var stu in qstus_not_taken)
+            {
+                User _user = UserBiz.getUserById(ctx, stu.StudentId);
+                all_stu_score.Add(new
+                {
+                    student_name = stu.StudentId,
+                    student_id = _user.user_name,
+                    score = 0
+                });
+            }
+
+            return Helper.JsonConverter.BuildResult(all_stu_score);
+        }
+
+        //public static object getStudentsOfClass(NBackendContext ctx, )
 
         //创建试卷后为试卷添加题目
         public static object postQuestionOfExam(string token, object json)
@@ -479,7 +535,9 @@ namespace NBackend.Biz
                     ctx.ExamQuestions.Add(new ExamQuestion
                     {
                         examId = exam_id,
-
+                        questionId = question_id,
+                        score = single_score,
+                        index = index,
                     });
                 }
                 else
@@ -487,7 +545,11 @@ namespace NBackend.Biz
                     //有一道题找不到？
                 }
             }
-            return null;
+
+            ctx.SaveChanges();
+
+            object data = new { exam_id = exam_id };
+            return Helper.JsonConverter.BuildResult(data);
         }
     }
 }
