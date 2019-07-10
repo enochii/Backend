@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using NBackend.Models;
+using NBackend.Biz;
 
 namespace NBackend.Controllers
 {
@@ -18,7 +19,7 @@ namespace NBackend.Controllers
         private NBackendContext db = new NBackendContext();
 
         [AllowAnonymous]
-        [HttpGet]
+        [HttpPost]
         [Route("api/class_work")]
         public object GetClassWork(object json)
         {
@@ -29,90 +30,60 @@ namespace NBackend.Controllers
             }
             return Biz.BroadcastBiz.GetAllHomework(json);
         }
-        // GET: api/Broadcasts
-        public IQueryable<Broadcast> GetBroadcasts()
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/broadcast")]
+        public object PostBroadcast(object json)
         {
-            return db.Broadcasts;
+            string token = Request.Headers.Authorization.Parameter;
+
+            return BroadcastBiz.postBroadcast(token, json);
         }
 
-        // GET: api/Broadcasts/5
-        [ResponseType(typeof(Broadcast))]
-        public async Task<IHttpActionResult> GetBroadcast(int id)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/class_broadcasts")]
+        public object GetClassBroadcast(object json)
         {
-            Broadcast broadcast = await db.Broadcasts.FindAsync(id);
-            if (broadcast == null)
-            {
-                return NotFound();
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            return Ok(broadcast);
+            return BroadcastBiz.getBroadcasts(token, json, false);
         }
 
-        // PUT: api/Broadcasts/5
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutBroadcast(int id, Broadcast broadcast)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/broadcasts")]
+        public object GetAllBroadcast(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var token = Request.Headers.Authorization.Parameter;
 
-            if (id != broadcast.BroadcastId)
-            {
-                return BadRequest();
-            }
-
-            db.Entry(broadcast).State = EntityState.Modified;
-
-            try
-            {
-                await db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BroadcastExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            return BroadcastBiz.getBroadcasts(token, json, true);
         }
 
-        // POST: api/Broadcasts
-        [ResponseType(typeof(Broadcast))]
-        public async Task<IHttpActionResult> PostBroadcast(Broadcast broadcast)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/broadcasts")]
+        public object GetBroadInfo(object json)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.Broadcasts.Add(broadcast);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = broadcast.BroadcastId }, broadcast);
+            string token = Request.Headers.Authorization.Parameter;
+            return BroadcastBiz.getBroastInfo(token, json);
         }
 
-        // DELETE: api/Broadcasts/5
-        [ResponseType(typeof(Broadcast))]
-        public async Task<IHttpActionResult> DeleteBroadcast(int id)
+        [AllowAnonymous]
+        [HttpDelete]
+        [Route("api/broadcasts")]
+        public object DeleteBroadcast(object json)
         {
-            Broadcast broadcast = await db.Broadcasts.FindAsync(id);
-            if (broadcast == null)
-            {
-                return NotFound();
-            }
-
-            db.Broadcasts.Remove(broadcast);
-            await db.SaveChangesAsync();
-
-            return Ok(broadcast);
+            string token = Request.Headers.Authorization.Parameter;
+            return BroadcastBiz.deleteBroadcast(token, json);
         }
+
+        //// GET: api/Broadcasts
+        //public IQueryable<Broadcast> GetBroadcasts()
+        //{
+        //    return db.Broadcasts;
+        //}
 
         protected override void Dispose(bool disposing)
         {
@@ -131,6 +102,9 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpOptions]
         [Route("api/class_work")]
+        [Route("api/broadcasts")]
+        [Route("api/class_broadcasts")]
+        [Route("api/broadcast")]
         public object Options()
         {
             return null;

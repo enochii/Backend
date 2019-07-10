@@ -109,11 +109,23 @@ namespace NBackend.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet]
+        [Route("api/follow_info")]
+        public object getFollowInfo(object json)
+        {
+            var token = Request.Headers.Authorization.Parameter;
+
+            return UserBiz.getFolowInfo(token);
+        }
+
+        [AllowAnonymous]
         [HttpOptions]
         [Route("api/followings")]
+        [Route("api/follow_info")]
         [Route("api/following")]
         [Route("api/followers")]
         [Route("api/users")]
+        [Route("api/user_info")]
         [Route("api/register")]
         [Route("api/login")]
         public object Options()

@@ -138,7 +138,7 @@ namespace NBackend.Biz
             List<object> ret = new List<object>();
             foreach(Twitter twi in list)
             {
-                User user = UserBiz.getUserById(ctx, twi.TwitterId);
+                User user = UserBiz.getUserById(ctx, twi.userId);
                 ret.Add(new
                 {
                     twitter_id = twi.TwitterId,

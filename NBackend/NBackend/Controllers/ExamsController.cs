@@ -130,6 +130,12 @@ namespace NBackend.Controllers
         }
         [AllowAnonymous]
         [HttpOptions]
+        [Route("api/exam_results")]
+        [Route("api/exam_creation")]
+        [Route("api/exam_questions")]
+        [Route("api/class_exams")]
+        [Route("api/course_questions")]
+        [Route("api/questions")]
         [Route("api/exams")]
         public object Options()
         {

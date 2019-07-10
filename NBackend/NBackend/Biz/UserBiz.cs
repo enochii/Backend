@@ -278,7 +278,8 @@ namespace NBackend.Biz
                     avatar = user.avatar,
                     job_title = job_title,
                     grade = grade,
-
+                    following = user.following.Count(),
+                    follower = user.followers.Count(),
                 };
 
                 return JsonConverter.BuildResult(data, 200, "ok");
@@ -460,6 +461,22 @@ namespace NBackend.Biz
                 users = users,
             };
             return JsonConverter.BuildResult(data, 200, "ok");
+        }
+
+        //获取用户的关注列表，包括ers和ing
+        public static object getFolowInfo(string token)
+        {
+            NBackendContext ctx = new NBackendContext();
+            int user_id = JwtManager.DecodeToken(token);
+            User user = getUserById(ctx, user_id);
+
+            var data = new
+            {
+                following = user.following.Count(),
+                follower = user.followers.Count(),
+            };
+
+            return JsonConverter.BuildResult(data);
         }
     }
 }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -205,7 +205,6 @@
     <Compile Include="Controllers\CoursesController.cs" />
     <Compile Include="Controllers\CourseWaresController.cs" />
     <Compile Include="Controllers\DiscussionsController.cs" />
-    <Compile Include="Controllers\DisscussionsController.cs" />
     <Compile Include="Controllers\ExamQuestionsController.cs" />
     <Compile Include="Controllers\ExamsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -281,14 +280,32 @@
     <Compile Include="Migrations\201907100720594_Discussion.Designer.cs">
       <DependentUpon>201907100720594_Discussion.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907101501000_discussion-type.cs" />
+    <Compile Include="Migrations\201907101501000_discussion-type.Designer.cs">
+      <DependentUpon>201907101501000_discussion-type.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907101525281_new-discussion.cs" />
+    <Compile Include="Migrations\201907101525281_new-discussion.Designer.cs">
+      <DependentUpon>201907101525281_new-discussion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907101528229_new-discussion-again.cs" />
+    <Compile Include="Migrations\201907101528229_new-discussion-again.Designer.cs">
+      <DependentUpon>201907101528229_new-discussion-again.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907101533140_drop-old-discussion.cs" />
+    <Compile Include="Migrations\201907101533140_drop-old-discussion.Designer.cs">
+      <DependentUpon>201907101533140_drop-old-discussion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907101542504_comments.cs" />
+    <Compile Include="Migrations\201907101542504_comments.Designer.cs">
+      <DependentUpon>201907101542504_comments.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
     <Compile Include="Models\Course.cs" />
     <Compile Include="Models\CourseWare.cs" />
     <Compile Include="Models\Discussion.cs" />
-    <Compile Include="Models\Disscussion.cs" />
-    <Compile Include="Models\DisscussionComment.cs" />
     <Compile Include="Models\Exam.cs" />
     <Compile Include="Models\ExamQuestion.cs" />
     <Compile Include="Models\Follow.cs" />
@@ -433,6 +450,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907100720594_Discussion.resx">
       <DependentUpon>201907100720594_Discussion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101501000_discussion-type.resx">
+      <DependentUpon>201907101501000_discussion-type.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101525281_new-discussion.resx">
+      <DependentUpon>201907101525281_new-discussion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101528229_new-discussion-again.resx">
+      <DependentUpon>201907101528229_new-discussion-again.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101533140_drop-old-discussion.resx">
+      <DependentUpon>201907101533140_drop-old-discussion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907101542504_comments.resx">
+      <DependentUpon>201907101542504_comments.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
