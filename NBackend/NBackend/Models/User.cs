@@ -29,14 +29,14 @@ namespace NBackend.Models
         [MaxLength(20)]
         public string department { get; set; }
         [Required]
-        [MaxLength(20)]
+        [MaxLength(80)]
         public string password { get; set; }
         [Required]
         [MaxLength(11)]
         [MinLength(11)]
         public string phone_number { get; set; }
         [Required]
-        [MaxLength(50)]
+        [MaxLength(80)]
         public string mail { get; set; }
      
         [MaxLength(100)]
