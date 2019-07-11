@@ -37,7 +37,7 @@ namespace NBackend.Models
         public string name { get; set; }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(300)]
         public string location { get; set; }
     }
 }

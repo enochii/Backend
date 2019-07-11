@@ -310,6 +310,10 @@
     <Compile Include="Migrations\201907110840367_change-length.Designer.cs">
       <DependentUpon>201907110840367_change-length.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201907111025568_ware-len.cs" />
+    <Compile Include="Migrations\201907111025568_ware-len.Designer.cs">
+      <DependentUpon>201907111025568_ware-len.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
     <Compile Include="Models\Broadcast.cs" />
@@ -481,6 +485,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907110840367_change-length.resx">
       <DependentUpon>201907110840367_change-length.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907111025568_ware-len.resx">
+      <DependentUpon>201907111025568_ware-len.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
