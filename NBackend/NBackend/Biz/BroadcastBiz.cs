@@ -184,18 +184,36 @@ namespace NBackend.Biz
         {
             int user_id = Helper.JwtManager.DecodeToken(token);
 
-            //获取用户的所有班级
-            var q = ctx.Takes.Where(take => take.StudentId == user_id).ToList().Select(take => new { take.secId,take.courseId,take.semester,take.year}).ToList();
+            User user = UserBiz.getUserById(ctx, user_id);
 
-            if (q.Any())
+            //var isec = null;
+            List<Broadcast> q1;
+            if (user.role.Equals("student"))
             {
-                var sec = q.Single();
+                //获取用户的所有班级
+                var q = ctx.Takes.Where(take => take.StudentId == user_id).ToList().Select(take => new { take.secId, take.courseId, take.semester, take.year }).ToList();
+                q1 = ctx.Broadcasts.ToList().Join(q, take => new { take.secId, take.courseId, take.semester, take.year }, sec => sec,
+                (bro, sec) => bro
+                ).Where(bro => bro.scope == SCOPE_CLASS).ToList();
             }
+            else
+            {
+                var q = ctx.Teaches.Where(take => take.TeacherId == user_id).ToList().Select(take => new { take.SecId, take.courseId, take.semester, take.year }).ToList();
+                q1 = ctx.Broadcasts.ToList().Join(q, take => new { take.courseId, take.semester, take.year }, sec => new { sec.courseId,sec.semester,sec.year},
+                (bro, sec) => new { bro, sec.SecId}
+                ).Where(bro => bro.bro.scope == SCOPE_CLASS && bro.SecId==bro.bro.secId).Select(bro=>bro.bro).ToList();
+            }
+            
+
+            //if (q.Any())
+            //{
+            //    var sec = q.Single();
+            //}
 
             //var secs = q.ToList();
-            var q1 = ctx.Broadcasts.ToList().Join(q, take=> new { take.secId, take.courseId, take.semester, take.year }, sec => sec,
-                (bro, sec) => bro
-                ).ToList();
+            //var q1 = ctx.Broadcasts.ToList().Join(q, take=> new { take.secId, take.courseId, take.semester, take.year }, sec => sec,
+            //    (bro, sec) => bro
+            //    ).Where(bro => bro.scope == SCOPE_CLASS).ToList();
 
             //.Join(ctx.Courses, bro=>bro.Course, course=>course,
             //    (bro, course) => new {bro, course.}
@@ -301,7 +319,7 @@ namespace NBackend.Biz
                     class_bros = getBroadcastsOfClass(token, json);
                     if (class_bros == null)
                     {
-                        return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
+                        return JsonConverter.Error(400, "信息填写错误或者其他异常");
                     }
                 }
 
@@ -330,7 +348,7 @@ namespace NBackend.Biz
 
                 if (!q.Any())
                 {
-                    return JsonConverter.Error(400, "该广播不存在或者你没有创建过该广播(＾Ｕ＾)ノ~ＹＯ");
+                    return JsonConverter.Error(400, "该广播不存在或者你没有创建过该广播");
                 }
                 var _tb = q.Single();
                 var broadcast = q1.Single();

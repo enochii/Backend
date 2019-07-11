@@ -52,7 +52,7 @@ namespace NBackend.Biz
                     exam => new { exam.Section.SecId, exam.Section.courseId }
                 , (take, exam) => new { exam, take.Section }
                 ).Where(exam_sec => exam_sec.exam.Section.year == exam_sec.Section.year && exam_sec.exam.Section.semester == exam_sec.Section.semester).ToList()
-                .Select(te => te.exam).ToList ();
+                .Select(te => te.exam).ToList();
 
                 //没参加的考试成绩为0
                 var qexam_not_taken = qexam_all.Except(qexam_taken.Select(qt => qt.Exam)).ToList();
@@ -67,7 +67,7 @@ namespace NBackend.Biz
                     int score = getTotalScore(ctx, et.ExamId);
                     if (score == 0)
                     {
-                        return Helper.JsonConverter.Error(400, "这张试卷有问题");
+                        return Helper.JsonConverter.Error(404, "找不到这张试卷");
                     }
 
                     grade = (int)((float)et.score * 5 / score);
@@ -101,7 +101,7 @@ namespace NBackend.Biz
 
                 return Helper.JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "查看总结出错，请检查请求字段");
             }
@@ -138,7 +138,7 @@ namespace NBackend.Biz
                 List<object> ques_ans = new List<object>();
 
                 int total_score = 0;
-                foreach(var qu in questions)
+                foreach (var qu in questions)
                 {
 
 
@@ -170,7 +170,7 @@ namespace NBackend.Biz
 
                 return Helper.JsonConverter.BuildResult(null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 //throw e;
                 return Helper.JsonConverter.Error(400, "提交失败");
@@ -187,7 +187,7 @@ namespace NBackend.Biz
             return q.Single();
         }
 
-        
+
         //创建考试
         public static object postExam(string token, object json)
         {
@@ -306,7 +306,7 @@ namespace NBackend.Biz
                 };
                 return Helper.JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "创建考试时出错");
             }
@@ -314,9 +314,9 @@ namespace NBackend.Biz
 
         private static int type2Id(string type)
         {
-            for(int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
-                if(type.Equals(exam_types[i]))
+                if (type.Equals(exam_types[i]))
                 {
                     return i + 1;
                 }
@@ -334,7 +334,7 @@ namespace NBackend.Biz
         }
 
         //获取班级的所有试卷基本信息
-        public static object getExamsOfClass(string token ,object json)
+        public static object getExamsOfClass(string token, object json)
         {
             try
             {
@@ -372,7 +372,7 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.BuildResult(data);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "获取班级信息时出错");
             }
@@ -384,11 +384,11 @@ namespace NBackend.Biz
             List<object> data = new List<object>();
             //NBackendContext ctx = new NBackendContext();
 
-            
+
 
             if (user.role.Equals("student"))
             {
-                var q = ctx.TakesExams.Where(te => te.StudentId == user.Id).Select(te=>te.ExamId);
+                var q = ctx.TakesExams.Where(te => te.StudentId == user.Id).Select(te => te.ExamId);
                 var taken_exams = q.ToList();
 
                 foreach (Exam exam in list)
@@ -405,7 +405,7 @@ namespace NBackend.Biz
                     });
                 }
             }
-            else if(user.role.Equals("teacher_edu"))
+            else if (user.role.Equals("teacher_edu"))
             {
                 foreach (Exam exam in list)
                 {
@@ -453,7 +453,7 @@ namespace NBackend.Biz
 
         public static bool isExamFinished(Exam ex)
         {
-             //ex = getExamById(ctx, exam_id);
+            //ex = getExamById(ctx, exam_id);
 
             string cur_time = getCurTime();
 
@@ -623,7 +623,7 @@ namespace NBackend.Biz
 
                 return Helper.JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "题目信息获取出错，请检查对应字段");
             }
@@ -670,7 +670,7 @@ namespace NBackend.Biz
 
                 return Helper.JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "信息填写有误？");
             }
@@ -766,7 +766,7 @@ namespace NBackend.Biz
 
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "请检查您的提交信息");
             }
@@ -845,31 +845,38 @@ namespace NBackend.Biz
                             student_id = stu.Student.StudentId,
                             student_name = _user.user_name,
                             exam_ended,
-                            //score = stu.score
-                            grade
+                            score = stu.score,
+                            grade,
+                            //total_score,
                         });
                     }
+
+
+                    foreach (var stu in qstus_not_taken)
+                    {
+                        User _user = UserBiz.getUserById(ctx, stu.StudentId);
+
+                        all_stu_score.Add(new
+                        {
+                            student_id = stu.StudentId,
+                            student_name = _user.user_name,
+                            exam_ended,
+                            score = 0,
+                            grade = 1,
+                            //total_score,
+                        });
+                    }
+                    var data = new { scores = all_stu_score, total_score };
+                    return Helper.JsonConverter.BuildResult(data);
                 }
                 catch (Exception e)
                 {
                     //int i;
+                    return Helper.JsonConverter.Error(400, "获取结果出错！");
                 }
 
-                foreach (var stu in qstus_not_taken)
-                {
-                    User _user = UserBiz.getUserById(ctx, stu.StudentId);
-                    all_stu_score.Add(new
-                    {
-                        student_id = stu.StudentId,
-                        student_name = _user.user_name,
-                        exam_ended,
-                        score = 0
-                    });
-                }
-
-                return Helper.JsonConverter.BuildResult(all_stu_score);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "查看考试结果出错，请检查提交信息");
             }
@@ -881,7 +888,7 @@ namespace NBackend.Biz
         //创建试卷第二步
         //public static object postQuestionOfExam(string token, object json)
         //{
-            
+
         //    int user_id = JwtManager.DecodeToken(token);
 
         //    NBackendContext ctx = new NBackendContext();

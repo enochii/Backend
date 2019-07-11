@@ -54,7 +54,7 @@ namespace NBackend.Controllers
         //个人成绩总结
         [AllowAnonymous]
         [HttpGet]
-        [Route("api/exam_sumup")]
+        [Route("api/exam_summary")]
         public object ExamSumup()
         {
             string token = Request.Headers.Authorization.Parameter;

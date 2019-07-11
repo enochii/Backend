@@ -28,7 +28,7 @@ namespace NBackend.Biz
                 User user = getUserById(ctx, id);
                 if (user == null)
                 {
-                    return JsonConverter.Error(400, "我也很绝望，没你这人");
+                    return JsonConverter.Error(400, "用户不存在");
                 }
 
                 var user_name = body["user_name"];
@@ -69,7 +69,7 @@ namespace NBackend.Biz
                     var q = ctx.Teachers.Where(tea => tea.TeacherId == user.Id);
                     if (!q.Any())
                     {
-                        return JsonConverter.Error(400, "没有这个人");
+                        return JsonConverter.Error(400, "用户不存在");
                     }
                     else
                     {
@@ -208,7 +208,7 @@ namespace NBackend.Biz
                 //ctx.SaveChanges();
                 ValidationHelper.safeSaveChanges(ctx);
 
-                return JsonConverter.BuildResult(null, 200, "ok no趴笨");
+                return JsonConverter.BuildResult(null, 200, "ok");
             }
             catch(Exception e)
             {
@@ -290,7 +290,7 @@ namespace NBackend.Biz
 
                 if(!getGradeOrTitle(ctx, user,ref grade, ref job_title))
                 {
-                    return JsonConverter.Error(400, "这可咋办");
+                    return JsonConverter.Error(400, "用户信息有误");
                 }
 
                 var data = new
@@ -379,13 +379,23 @@ namespace NBackend.Biz
                 User user = getUserById(ctx, user_id);
                 User following = getUserById(ctx, following_id);
 
+                if(user==null || following == null)
+                {
+                    return Helper.JsonConverter.Error(400, "用户信息有误");
+                }
+
+                if(user.Id == following.Id)
+                {
+                    return Helper.JsonConverter.Error(400, "请不要follow自己");
+                }
+
                 if (containsUser(user.following.ToList(), following))
                 {
-                    return Helper.JsonConverter.Error(400, "负负得正");
+                    return Helper.JsonConverter.Error(400, "你已经follow过该用户");
                 }
                 if (containsUser(following.followers.ToList(), user))
                 {
-                    return Helper.JsonConverter.Error(400, "咋回事？你已经follow了？表不一致啊");
+                    return Helper.JsonConverter.Error(400, "follow信息有误");
                 }
 
                 user.following.Add(following);
@@ -418,7 +428,7 @@ namespace NBackend.Biz
                 }
                 if (!containsUser(following.followers.ToList(), user))
                 {
-                    return Helper.JsonConverter.Error(400, "咋回事？你没follow？表不一致啊");
+                    return Helper.JsonConverter.Error(400, "follow信息有误");//表不一致
                 }
                 user.following.Remove(following);
                 following.followers.Remove(user);
@@ -479,7 +489,7 @@ namespace NBackend.Biz
 
                 if (!getGradeOrTitle(ctx, user, ref grade, ref job_title))
                 {
-                    return JsonConverter.Error(400, "这可咋办");
+                    return JsonConverter.Error(400, "用户信息有误");
                 }
 
                 users.Add(new
