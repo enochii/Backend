@@ -228,6 +228,7 @@
     </Compile>
     <Compile Include="Helper\JsonConverter.cs" />
     <Compile Include="Helper\TokenManager.cs" />
+    <Compile Include="Helper\UserHelper.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.Designer.cs">
       <DependentUpon>201907071330004_InitialCreate.cs</DependentUpon>

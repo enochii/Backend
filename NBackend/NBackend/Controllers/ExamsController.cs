@@ -37,15 +37,38 @@ namespace NBackend.Controllers
 
             return ExamBiz.postExam(token, json);
         }
+
         [AllowAnonymous]
-        [HttpPost]
-        [Route("api/exam_creation")]
-        public object PostExamQuestions(object json)
+        [HttpGet]
+        [Route("api/finished_exam")]
+        public object FinishExam(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
 
-            return ExamBiz.postQuestionOfExam(token, json);
+            return ExamBiz.finishExam(token, json);
         }
+
+
+        //个人成绩总结
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("api/Exam_sumup")]
+        public object ExamSumup()
+        {
+            string token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.examSumup(token);
+        }
+
+        //[AllowAnonymous]
+        //[HttpPost]
+        //[Route("api/exam_creation")]
+        //public object PostExamQuestions(object json)
+        //{
+        //    var token = Request.Headers.Authorization.Parameter;
+
+        //    return ExamBiz.postQuestionOfExam(token, json);
+        //}
 
         [AllowAnonymous]
         [HttpPost]
@@ -136,6 +159,7 @@ namespace NBackend.Controllers
         [Route("api/class_exams")]
         [Route("api/course_questions")]
         [Route("api/questions")]
+        [Route("api/finished_exam")]
         [Route("api/exams")]
         public object Options()
         {

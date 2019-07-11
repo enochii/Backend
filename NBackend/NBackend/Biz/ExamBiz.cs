@@ -6,6 +6,7 @@ using System.Web;
 using NBackend.Models;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace NBackend.Biz
 {
@@ -33,6 +34,79 @@ namespace NBackend.Biz
             }
         }
 
+        public static object examSumup(string token)
+        {
+            int user_id = JwtManager.DecodeToken(token);
+
+            NBackendContext ctx = new NBackendContext();
+
+            User user = UserBiz.getUserById(ctx, user_id);
+
+            //参加的考试
+            var qexam_taken = ctx.TakesExams.Where(te => te.Student.StudentId == user_id);
+
+            //参加的课程的所有考试
+            var qexam_all = ctx.Takes.Where(take => take.StudentId == user_id).Join(ctx.Exams, take => take.Section, exam => exam.Section
+            , (take, exam) => exam
+            );
+
+            //没参加的考试成绩为0
+            var qexam_not_taken = qexam_all.Except(qexam_taken.Select(qt => qt.Exam));
+
+            int exam_num = qexam_all.Count();
+            List<object> exams = new List<object>();
+
+            foreach(var et in qexam_taken)
+            {
+                int grade = 1;//等级
+                Course course = et.Exam.Course;
+                int score = getTotalScore(ctx, et.ExamId);
+                if(score == 0)
+                {
+                    return Helper.JsonConverter.Error(400, "这张试卷有问题");
+                }
+
+                grade = (int)((float)et.score * 5 / score);
+
+                exams.Add(new
+                {
+                    exam_id = et.ExamId,
+                    course.course_name,
+                    et.Exam.title,
+                    grade
+                });
+            }
+
+            foreach(var ent in qexam_not_taken)
+            {
+                Course course = ent.Course;
+                exams.Add(new
+                {
+                    exam_id = ent.ExamId,
+                    course.course_name,
+                    ent.title,
+                    grade = 1
+                });
+            }
+
+            var data = new
+            {
+                exam_num,
+                exams
+            };
+
+            return Helper.JsonConverter.BuildResult(data);
+        }
+
+        //考虑要不要给试卷加总分字段
+        //获取某场考试的总分
+        private static int getTotalScore(NBackendContext ctx, int exam_id)
+        {
+            int ret = ctx.ExamQuestions.Where(eq => eq.examId == exam_id).Sum(eq => eq.score);
+
+            return ret;
+        }
+
         //学生提交试卷
         public static object finishExam(string token, object json)
         {
@@ -41,24 +115,33 @@ namespace NBackend.Biz
             NBackendContext ctx = new NBackendContext();
             User user = UserBiz.getUserById(ctx, user_id);
 
-            var body = Helper.JsonConverter.Decode(json);
+            //var body = Helper.JsonConverter.Decode(json);
+
+            var body = JsonConvert.DeserializeObject<Dictionary<string, object>>(json.ToString());
 
             try
             {
-                int exam_id = int.Parse(body["exam_id"]);
-                string questions = body["questions"];
+                var exam_id = (int)body["exam_id"];
+                var questions = (JArray)body["questions"];
 
-                var _body = JsonConvert.DeserializeObject<List<object>>(questions);
+                //var _body = JsonConvert.DeserializeObject<List<object>>(questions);
 
                 List<object> ques_ans = new List<object>();
 
                 int total_score = 0;
-                foreach(var qu in _body)
+                foreach(var qu in questions)
                 {
-                    var __body = Helper.JsonConverter.Decode(qu);
-                    int question_id = int.Parse(__body["question_id"]);
 
-                    string answer = __body["answer"];
+
+                    IDictionary<string, JToken> rates = (JObject)qu;
+                    // Explicit typing just for "proof" here
+                    Dictionary<string, object> __body =
+                        rates.ToDictionary(pair => pair.Key,
+                                           pair => (object)pair.Value);
+
+                    int question_id = (int)__body["question_id"];
+
+                    string answer = (string)__body["answer"];
 
                     Question question = getQuestionById(ctx, question_id);
                     if (question.answer.Equals(answer))
@@ -71,7 +154,7 @@ namespace NBackend.Biz
                 ctx.TakesExams.Add(new TakesExam
                 {
                     StudentId = user_id,
-                    ExamId = exam_id,
+                    ExamId = (int)exam_id,
                     score = total_score
                 });
                 ctx.SaveChanges();
@@ -94,33 +177,36 @@ namespace NBackend.Biz
             return q.Single();
         }
 
-        //创建考试第一步
+        
+        //创建考试
         public static object postExam(string token, object json)
         {
             int user_id = JwtManager.DecodeToken(token);
             NBackendContext ctx = new NBackendContext();
             //验证该用户是否是教学的老师
             User user = UserBiz.getUserById(ctx, user_id);
-            if(user == null || user.role != "teacher_edu")
+            if (user == null || user.role != "teacher_edu")
             {
                 return Helper.JsonConverter.Error(400, "该用户没有权限创建试卷");
             }
 
-            var body = Helper.JsonConverter.Decode(json);
+            //var body = Helper.JsonConverter.Decode(json);
+            var body = JsonConvert.DeserializeObject<Dictionary<string, object>>(json.ToString());
 
-            int sec_id = int.Parse(body["sec_id"]);
-            int course_id = int.Parse(body["course_id"]);
-            string semester = body["semester"];
-            int year = int.Parse(body["year"]);
+            int sec_id = (int)(long)body["sec_id"];
+            int course_id = (int)(long)body["course_id"];
+            string semester = (string)body["semester"];
+            int year = (int)(long)body["year"];
 
-            string scope = body["scope"];
-            string type = body["type"];
+            string scope = (string)body["scope"];
+            string type = (string)body["type"];
 
-            string start_time = body["start_time"];
-            string end_time = body["end_time"];
-            string title = body["title"];
+            string start_time = (string)body["start_time"];
+            string end_time = (string)body["end_time"];
+            string title = (string)body["title"];
 
             //NBackendContext ctx = new NBackendContext();
+            //创建考试第一步
             Exam exam = new Exam
             {
                 secId = sec_id,
@@ -135,11 +221,76 @@ namespace NBackend.Biz
             };
 
             ctx.Exams.Add(exam);
+
+            var questions = (JArray)body["questions"];
+
+
+            foreach (var qu in questions)
+            {
+                IDictionary<string, JToken> rates = (JObject)qu;
+                // Explicit typing just for "proof" here
+                Dictionary<string, object> __body =
+                    rates.ToDictionary(pair => pair.Key,
+                                       pair => (object)pair.Value);
+
+                int question_id = ((JValue)__body["question_id"]).Value<int>();
+
+
+                int single_score = ((JValue)__body["score"]).Value<int>();
+                int index = ((JValue)__body["index"]).Value<int>();
+
+                //if (questions.Select(_qu=>_qu.).Contains(question_id))
+                //{
+                ctx.ExamQuestions.Add(new ExamQuestion
+                {
+                    examId = exam.ExamId,
+                    questionId = question_id,
+                    score = single_score,
+                    index = index,
+                });
+                //}
+                //else
+                //{
+                //    //有一道题找不到？
+                //}
+            }
+
+            //创建考试第二步
+            //int exam_id = exam.ExamId;
+            //string _quess = body["questions"];
+
+            //var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
+
+            //var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
+            //foreach (object obj in quess)
+            //{
+            //    var _body = Helper.JsonConverter.Decode(obj);
+            //    int question_id = int.Parse(_body["question_id"]);
+            //    int single_score = int.Parse(_body["score"]);
+            //    int index = int.Parse(_body["index"]);
+
+            //    if (questions.Contains(question_id))
+            //    {
+            //        ctx.ExamQuestions.Add(new ExamQuestion
+            //        {
+            //            examId = exam_id,
+            //            questionId = question_id,
+            //            score = single_score,
+            //            index = index,
+            //        });
+            //    }
+            //    else
+            //    {
+            //        //有一道题找不到？
+            //    }
+            //}
+
+
             ctx.SaveChanges();
 
             var data = new
             {
-                exam_id = exam.ExamId
+                //exam_id
             };
             return Helper.JsonConverter.BuildResult(data);
         }
@@ -222,7 +373,7 @@ namespace NBackend.Biz
                     {
                         exam_id = exam.ExamId,
                         scope = exam.scope,
-                        type = exam.type,
+                        type = id2Type(exam.type),
                         start_time = exam.start_time,
                         end_time = exam.end_time,
                         title = exam.title,
@@ -238,7 +389,7 @@ namespace NBackend.Biz
                     {
                         exam_id = exam.ExamId,
                         scope = exam.scope,
-                        type = exam.type,
+                        type = id2Type(exam.type),
                         start_time = exam.start_time,
                         end_time = exam.end_time,
                         title = exam.title,
@@ -266,6 +417,29 @@ namespace NBackend.Biz
                 return eq.Single();
             }
             //return -1;
+        }
+
+        public static string getCurTime()
+        {
+            string datePatt = @"MM/dd/yyyy hh:mm:ss tt";
+            string cur_time = DateTime.Now.ToLocalTime().ToString(datePatt).Replace('/', '.');
+
+            return cur_time;
+        }
+
+        public static bool isExamFinished(Exam ex)
+        {
+             //ex = getExamById(ctx, exam_id);
+
+            string cur_time = getCurTime();
+
+
+            bool exam_ended = false;
+            if (cur_time.CompareTo(ex.end_time) != -1)
+            {
+                exam_ended = true;
+            }
+            return exam_ended;
         }
 
         //获取某张试卷所有的题目，包括学生考试前后和老师查看
@@ -311,7 +485,7 @@ namespace NBackend.Biz
                 );
             var questions = q1.ToList();
 
-            object data;
+            object data = null;
             List<object> qdata = new List<object>();
 
             if(user.role.Equals("teacher_edu"))
@@ -319,7 +493,7 @@ namespace NBackend.Biz
                 foreach(var qu in questions)
                 {
                     int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
-
+                    int score = getScoreById(ctx, qu.QuestionId, exam_id);
                     qdata.Add(new
                     {
                         question_id = qu.QuestionId,
@@ -328,7 +502,8 @@ namespace NBackend.Biz
                         content = qu.content,
                         options = qu.options,
                         answer = qu.answer,
-                        index
+                        index,
+                        score
                     });
                 }
                 
@@ -338,19 +513,19 @@ namespace NBackend.Biz
                 var q2 = ctx.TakesExams.Where(te => te.StudentId == user_id &&
                 te.ExamId == exam_id
                 );
-                if (!q2.Any())
+                //if (!q2.Any())
+                //{
+                //    return Helper.JsonConverter.Error(400, "无效用户或考试");
+                //}
+
+                //var ex = q2.Single().Exam;
+                var ex = getExamById(ctx, exam_id);
+                if (ex == null)
                 {
-                    return Helper.JsonConverter.Error(400, "无效用户或考试");
+                    return Helper.JsonConverter.Error(400, "考试没了！");
                 }
 
-                var ex = q2.Single().Exam;
-                string cur_time = DateTime.Now.ToUniversalTime().ToString().Replace('-', '.');
-
-                bool exam_ended = false;
-                if (cur_time.CompareTo(ex.end_time) != -1)
-                {
-                    exam_ended = true;
-                }
+                bool exam_ended = isExamFinished(ex);
 
                 //没参加过这场考试并且没超时
                 if (!q2.Any() && !exam_ended)
@@ -358,6 +533,7 @@ namespace NBackend.Biz
                     foreach (var qu in questions)
                     {
                         int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+                        int score = getScoreById(ctx, qu.QuestionId, exam_id);
 
                         qdata.Add(new
                         {
@@ -366,7 +542,8 @@ namespace NBackend.Biz
                             chapter = qu.chapter,
                             content = qu.content,
                             options = qu.options,
-                            index
+                            index,
+                            score,
                         });
                     }
                     data = new
@@ -383,6 +560,7 @@ namespace NBackend.Biz
                     foreach (var qu in questions)
                     {
                         int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+                        int score = getScoreById(ctx, qu.QuestionId, exam_id);
 
                         qdata.Add(new
                         {
@@ -392,7 +570,8 @@ namespace NBackend.Biz
                             content = qu.content,
                             options = qu.options,
                             answer = qu.answer,
-                            index
+                            index,
+                            score
                         });
                     }
                     data = new
@@ -411,7 +590,7 @@ namespace NBackend.Biz
                 return Helper.JsonConverter.Error(400, "您没有权限(＾Ｕ＾)ノ~ＹＯ");
             }
 
-            return null;
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         private static Exam getExamById(NBackendContext ctx, int exam_id)
@@ -565,7 +744,7 @@ namespace NBackend.Biz
             NBackendContext ctx = new NBackendContext();
 
             User user = UserBiz.getUserById(ctx, user_id);
-            if (user.role.Equals("teacher_edu"))
+            if (!user.role.Equals("teacher_edu"))
             {
                 return Helper.JsonConverter.Error(400, "你没有权限(＾Ｕ＾)ノ~ＹＯ");
             }
@@ -573,40 +752,61 @@ namespace NBackend.Biz
             var body = Helper.JsonConverter.Decode(json);
             int exam_id = int.Parse(body["exam_id"]);
 
+            //ToList()及时求值定位错误快点。。。
             //通过exam取出班级，再取出班级的所有人
             //真糖！
-            var qstus = ctx.Exams.Join(ctx.Takes, ex => ex.Section, take => take.Section,
-                (ex, take) => new { exam_id, take.Student }
-                );
+            var qstus = ctx.Exams.Join(ctx.Takes, ex => new { ex.year,ex.courseId},//最多两个键？Section又不行。。。
+                take => new{ take.Section.year, take.Section.courseId},
+                (ex, take) => new { exam_id, take,ex.semester,ex.secId }
+                ).Where(_=>_.take.Section.semester == _.semester&&_.take.Section.SecId == _.secId).Select(_=>new { _.take.Student, _.exam_id}).ToList();
             //获得参加本场考试的学生的信息和分数
             var qstus_taken = qstus.Join(ctx.TakesExams, stu => stu.Student, te => te.Student,
                 (stu, te) => new { stu, te.score }
-                ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score });
+                ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score }).ToList();
 
             //拿到所有学生
             var qstus_only = qstus.Select(stu => stu.Student);
-            var qstus_not_taken = qstus_only.Except(qstus_taken.Select(stu_score => stu_score.Student));
+            var qstus_not_taken = qstus_only.Except(qstus_taken.Select(stu_score => stu_score.Student)).ToList();
 
             List<object> all_stu_score= new List<object>();
             //User student = getUserById()
 
-            foreach(var stu  in qstus_taken)
+            var _ex = getExamById(ctx, exam_id);
+            if (_ex == null)
             {
-                User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
-                all_stu_score.Add(new
-                {
-                    student_name = stu.Student.StudentId,
-                    student_id = _user.user_name,
-                    score = stu.score
-                });
+                return Helper.JsonConverter.Error(404, "考试不存在");
             }
+
+            //判断考试是否结束
+            bool exam_ended = isExamFinished(_ex);
+
+            try
+            {
+                foreach (var stu in qstus_taken)
+                {
+                    User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
+                    all_stu_score.Add(new
+                    {
+                        student_id = stu.Student.StudentId,
+                        student_name = _user.user_name,
+                        exam_ended,
+                        score = stu.score
+                    });
+                }
+            }
+            catch(Exception e)
+            {
+                //int i;
+            }
+
             foreach (var stu in qstus_not_taken)
             {
                 User _user = UserBiz.getUserById(ctx, stu.StudentId);
                 all_stu_score.Add(new
                 {
-                    student_name = stu.StudentId,
-                    student_id = _user.user_name,
+                    student_id = stu.StudentId,
+                    student_name = _user.user_name,
+                    exam_ended,
                     score = 0
                 });
             }
@@ -618,55 +818,55 @@ namespace NBackend.Biz
 
         //创建试卷后为试卷添加题目
         //创建试卷第二步
-        public static object postQuestionOfExam(string token, object json)
-        {
+        //public static object postQuestionOfExam(string token, object json)
+        //{
             
-            int user_id = JwtManager.DecodeToken(token);
+        //    int user_id = JwtManager.DecodeToken(token);
 
-            NBackendContext ctx = new NBackendContext();
-            User user = UserBiz.getUserById(ctx, user_id);
+        //    NBackendContext ctx = new NBackendContext();
+        //    User user = UserBiz.getUserById(ctx, user_id);
 
-            if (user == null || !user.role.Equals("teacher_edu"))
-            {
-                //可以再判断这个老师是不是教这个的
-                return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
-            }
+        //    if (user == null || !user.role.Equals("teacher_edu"))
+        //    {
+        //        //可以再判断这个老师是不是教这个的
+        //        return Helper.JsonConverter.Error(400, "您未登录或者没有权限");
+        //    }
 
-            //[ { exam_id, question_id, score, index}, {...}]
-            var body = Helper.JsonConverter.Decode(json);
-            int exam_id = int.Parse(body["exam_id"]);
-            string _quess = body["questions"];
+        //    //[ { exam_id, question_id, score, index}, {...}]
+        //    var body = Helper.JsonConverter.Decode(json);
+        //    int exam_id = int.Parse(body["exam_id"]);
+        //    string _quess = body["questions"];
 
-            var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
+        //    var quess = JsonConvert.DeserializeObject<List<object>>(_quess);
 
-            var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
-            foreach(object obj in quess)
-            {
-                var _body = Helper.JsonConverter.Decode(obj);
-                int question_id = int.Parse(_body["question_id"]);
-                int single_score = int.Parse(_body["score"]);
-                int index = int.Parse(_body["index"]);
+        //    var questions = ctx.Questions.Select(qu => qu.QuestionId).ToList();
+        //    foreach(object obj in quess)
+        //    {
+        //        var _body = Helper.JsonConverter.Decode(obj);
+        //        int question_id = int.Parse(_body["question_id"]);
+        //        int single_score = int.Parse(_body["score"]);
+        //        int index = int.Parse(_body["index"]);
 
-                if (questions.Contains(question_id))
-                {
-                    ctx.ExamQuestions.Add(new ExamQuestion
-                    {
-                        examId = exam_id,
-                        questionId = question_id,
-                        score = single_score,
-                        index = index,
-                    });
-                }
-                else
-                {
-                    //有一道题找不到？
-                }
-            }
+        //        if (questions.Contains(question_id))
+        //        {
+        //            ctx.ExamQuestions.Add(new ExamQuestion
+        //            {
+        //                examId = exam_id,
+        //                questionId = question_id,
+        //                score = single_score,
+        //                index = index,
+        //            });
+        //        }
+        //        else
+        //        {
+        //            //有一道题找不到？
+        //        }
+        //    }
 
-            ctx.SaveChanges();
+        //    ctx.SaveChanges();
 
-            object data = new { exam_id = exam_id };
-            return Helper.JsonConverter.BuildResult(data);
-        }
+        //    object data = new { exam_id = exam_id };
+        //    return Helper.JsonConverter.BuildResult(data);
+        //}
     }
 }

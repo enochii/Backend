@@ -33,7 +33,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("api/broadcast")]
+        [Route("api/broadcasts")]
         public object PostBroadcast(object json)
         {
             string token = Request.Headers.Authorization.Parameter;
@@ -53,7 +53,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        [Route("api/broadcasts")]
+        [Route("api/all_broadcasts")]
         public object GetAllBroadcast()
         {
             var token = Request.Headers.Authorization.Parameter;
@@ -104,7 +104,7 @@ namespace NBackend.Controllers
         [Route("api/class_work")]
         [Route("api/broadcasts")]
         [Route("api/class_broadcasts")]
-        [Route("api/broadcast")]
+        [Route("api/all_broadcasts")]
         [Route("api/broadcast_info")]
         public object Options()
         {
