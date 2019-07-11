@@ -96,7 +96,8 @@ namespace NBackend.Biz
                                              teacher_name = each_user.user_name,
                                              avatar = each_class.avatar
                                          });
-
+                        if ((!a_course.Any()) || (!a_teacher.Any()))
+                            continue;
                         var the_course = a_course.Single();
                         var the_teacher = a_teacher.Single();
 
