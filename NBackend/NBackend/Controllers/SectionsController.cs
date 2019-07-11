@@ -90,6 +90,14 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("api/teachers")]
+        public object GetTeachersId()
+        {
+            return Biz.ClassBiz.GetTeachersId();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/waiting_classes")]
         public object GetWaitingSections(object json)
         {
@@ -288,6 +296,7 @@ namespace NBackend.Controllers
         [Route("api/students")]
         [Route("api/courses")]
         [Route("api/term_part_classes")]
+        [Route("api/teachers")]
         public object Options()
         {
             return null;
