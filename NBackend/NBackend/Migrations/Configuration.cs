@@ -4,6 +4,7 @@ namespace NBackend.Migrations
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
+    using System.Collections.Generic;
 
     internal sealed class Configuration : DbMigrationsConfiguration<NBackend.Models.NBackendContext>
     {
@@ -30,10 +31,11 @@ namespace NBackend.Migrations
                       courseId = 2,
                       semester = "Spring",
                       year = 2019,
-                      userId=1651162,
-                      content="���������콲docker",
+                      userId = 1753122,
+                      content = "hhh",
                       time = "2019.07.10 18:00",
-                      is_comment=false
+                      is_comment = false
+                      //comments = null
                   }
                 );
             //context.Users.AddOrUpdate(
@@ -155,27 +157,27 @@ namespace NBackend.Migrations
             //  }
             //);
 
-            context.Teams.AddOrUpdate(
-              p => p.TeamId,
-              new Models.Team
-              {
-                  //TeamId = 1,
-                  secId = 1,
-                  courseId = 2,
-                  semester = "Spring",
-                  year = 2019,
-                  team_name = "abcd"
-              },
-             new Models.Team
-             {
-                 //TeamId = 2,
-                 secId = 1,
-                 courseId = 2,
-                 semester = "Spring",
-                 year = 2019,
-                 team_name = "abcd"
-             }
-            );
+            //context.Teams.AddOrUpdate(
+            //  p => p.TeamId,
+            //  new Models.Team
+            //  {
+            //      //TeamId = 1,
+            //      secId = 1,
+            //      courseId = 2,
+            //      semester = "Spring",
+            //      year = 2019,
+            //      team_name = "abcd"
+            //  },
+            // new Models.Team
+            // {
+            //     //TeamId = 2,
+            //     secId = 1,
+            //     courseId = 2,
+            //     semester = "Spring",
+            //     year = 2019,
+            //     team_name = "abcd"
+            // }
+            //);
 
             //context.Discussions.AddOrUpdate(
             //  p => p.secId,

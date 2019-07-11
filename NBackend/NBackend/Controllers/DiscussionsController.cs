@@ -27,6 +27,19 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        [Route("api/discussion_summary")]
+        public object GetDiscussionSummary(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录啊");
+            }
+            return Biz.DiscussionBiz.GetDiscussionSummary(json,token);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
         [Route("api/one_discussion")]
         public object GetOneDiscussion(object json)
         {
@@ -152,6 +165,7 @@ namespace NBackend.Controllers
         [Route("api/discussions")]
         [Route("api/one_discussion")]
         [Route("api/discussion")]
+        [Route("api/discussion_summary")]
         public object Options()
         {
             return null;
