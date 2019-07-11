@@ -110,7 +110,7 @@ namespace NBackend.Biz
                 }
                 var the_courseware = any_courseware.Single();
                 context.CourseWares.Remove(the_courseware);
-
+                context.SaveChanges();
                 return Helper.JsonConverter.BuildResult(null);
             }
         }
