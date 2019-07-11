@@ -128,6 +128,9 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "这个人有问题");
                 }
 
+                if (time.Count() > 20 || time.Count() < 16)
+                    return Helper.JsonConverter.Error(400, "这个时间格式有问题");
+
                 Discussion new_discussion = new Discussion();
                 if (question_id == 0)
                 {

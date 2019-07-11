@@ -39,7 +39,20 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("api/part_classes")]
-        public object GetPartSections(object json)
+        public object GetMySections(object json)
+        {
+            String token = Request.Headers.Authorization.Parameter;
+            if (token == null)
+            {
+                return Helper.JsonConverter.Error(401, "你还没登录？");
+            }
+            return Biz.ClassBiz.GetMyClass(json, token);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("api/term_part_classes")]
+        public object GetPartClasses(object json)
         {
             String token = Request.Headers.Authorization.Parameter;
             if (token == null)
@@ -111,7 +124,7 @@ namespace NBackend.Controllers
             {
                 return Helper.JsonConverter.Error(401, "你还没登录？");
             }
-            return Biz.ClassBiz.GetOneClassDetails(json);
+            return Biz.ClassBiz.GetOneClassDetails(json,token);
         }
 
         [AllowAnonymous]
@@ -274,6 +287,7 @@ namespace NBackend.Controllers
         [Route("api/permission")]
         [Route("api/students")]
         [Route("api/courses")]
+        [Route("api/term_part_classes")]
         public object Options()
         {
             return null;
