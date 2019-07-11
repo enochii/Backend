@@ -37,6 +37,18 @@ namespace NBackend.Controllers
 
             return ExamBiz.postExam(token, json);
         }
+
+        //个人成绩总结
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("api/Exam_sumup")]
+        public object ExamSumup()
+        {
+            string token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.examSumup(token);
+        }
+
         //[AllowAnonymous]
         //[HttpPost]
         //[Route("api/exam_creation")]
