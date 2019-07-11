@@ -213,7 +213,8 @@ namespace NBackend.Biz
                                     join each_taking in context.Takes
                                         on new { each_class.courseId, each_class.semester, each_class.year }
                                         equals new { each_taking.courseId, each_taking.semester, each_taking.year }
-                                    where each_class.SecId == each_taking.secId && each_class.semester == semester && each_class.year == year && each_taking.StudentId == student_id
+                                    where each_class.SecId == each_taking.secId && each_class.semester == semester && 
+                                            each_class.year == year && each_taking.StudentId == student_id&&each_taking.validate_status==true
                                     select new
                                     {
                                         SecId = each_class.SecId,

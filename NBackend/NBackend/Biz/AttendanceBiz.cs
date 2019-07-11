@@ -138,7 +138,7 @@ namespace NBackend.Biz
                 }
 
                 var records = context.Attentions.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                            && a.semester == semester && a.year == year && a.StudentId == student_id);
+                                                            && a.semester == semester && a.year == year && a.StudentId == student_id&&a.timeId==time_id);
                 if (!records.Any())
                 {
                     return Helper.JsonConverter.Error(400, "这个班这次课没有出席表啊");
