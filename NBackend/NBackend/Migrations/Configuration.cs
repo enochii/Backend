@@ -34,7 +34,7 @@ namespace NBackend.Migrations
                       userId = 1753122,
                       content = "hhh",
                       time = "2019.07.10 18:00",
-                      is_comment = false
+                      is_comment = false,
                       //comments = null
                   }
                 );

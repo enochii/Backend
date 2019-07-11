@@ -45,6 +45,7 @@ namespace NBackend.Biz
                             role = user_info.role,
                             content = a_discussion.content,
                             time = a_discussion.time,
+                            avatar = user_info.avatar
                             //question_id = a_discussion.Discussion_DisscussionId
                         });
                     }
@@ -87,6 +88,7 @@ namespace NBackend.Biz
                             role = context.Users.Single(a => a.Id == each_reply.userId).role,
                             content = each_reply.content,
                             time = each_reply.time,
+                            avatar = context.Users.Single(a => a.Id == each_reply.userId).avatar,
                             question_id = the_discussion.DisscussionId
                         });
                     }
@@ -98,6 +100,7 @@ namespace NBackend.Biz
                     user_id = the_discussion.userId,
                     user_name = context.Users.Single(a => a.Id == the_discussion.userId),
                     role = context.Users.Single(a => a.Id == the_discussion.userId).role,
+                    avatar = context.Users.Single(a => a.Id == the_discussion.userId).avatar,
                     content = the_discussion.content,
                     time = the_discussion.time,
                     replys = list
@@ -127,6 +130,9 @@ namespace NBackend.Biz
                 {
                     return Helper.JsonConverter.Error(400, "这个人有问题");
                 }
+
+                if (time.Count() > 20 || time.Count() < 16)
+                    return Helper.JsonConverter.Error(400, "这个时间格式有问题");
 
                 Discussion new_discussion = new Discussion();
                 if (question_id == 0)
@@ -205,17 +211,17 @@ namespace NBackend.Biz
                                     group each_discussions by each_discussions.courseId into dgroups
                                     select new
                                     {
-                                        course_id=dgroups.Key,
+                                        course_id = dgroups.Key,
                                         //course_name = some_discussions.First(a=>a.courseId==dgroups.Key).n,
-                                        course_discussion_num = some_discussions.Where(a=>a.courseId==dgroups.Key).Count()
+                                        course_discussion_num = some_discussions.Where(a => a.courseId == dgroups.Key).Count()
                                     } into discussion_courses
-                                    orderby discussion_courses.course_discussion_num descending 
-                                    select discussion_courses) ;
+                                    orderby discussion_courses.course_discussion_num descending
+                                    select discussion_courses);
                 var data = new
                 {
                     total_discussions = some_discussions.Count(),
                     total_courses = some_courses.Count(),
-                    max_course_name = context.Courses.Single(a=>a.CourseId==some_courses.FirstOrDefault().course_id).course_name
+                    max_course_name = context.Courses.Single(a => a.CourseId == some_courses.FirstOrDefault().course_id).course_name
                 };
 
                 return Helper.JsonConverter.BuildResult(data);

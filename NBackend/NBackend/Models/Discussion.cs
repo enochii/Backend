@@ -16,7 +16,7 @@ namespace NBackend.Models
         public virtual ICollection<Discussion> comments { get; set; }
         public Discussion()
         {
-            comments = new List<Discussion>();
+            this.comments = new List<Discussion>();
         }
         // 班级外键
         [DatabaseGenerated(DatabaseGeneratedOption.None)]

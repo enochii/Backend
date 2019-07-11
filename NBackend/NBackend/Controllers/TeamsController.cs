@@ -198,7 +198,7 @@ namespace NBackend.Controllers
         [Route("api/teams")]
         [Route("api/part_teams")]
         [Route("api/its_teams")]
-        [Route("api/teams")]
+        [Route("api/team")]
         [Route("api/teams_attendance")]
         public object Options()
         {
