@@ -159,8 +159,9 @@ namespace NBackend.Biz
 
                 return ListToObj(_getBroadcastsOfClass(ctx, sec_id, course_id, year, semester));
             }
-            catch
+            catch(Exception e)
             {
+                
                 return null;
             }
             
@@ -234,7 +235,7 @@ namespace NBackend.Biz
                 return null;
             }
 
-            var q = ctx.Broadcasts.Where(broadcast => broadcast.Section.Equals(sec));
+            var q = ctx.Broadcasts.ToList().Where(broadcast => broadcast.Section.Equals(sec));
             var broadcasts = q.ToList();
 
             return broadcasts;

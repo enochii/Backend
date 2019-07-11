@@ -419,6 +419,7 @@ namespace NBackend.Biz
             //return -1;
         }
 
+
         //获取某张试卷所有的题目，包括学生考试前后和老师查看
         public static object getQuestionsOfExam(string token, object json)
         {
@@ -462,7 +463,7 @@ namespace NBackend.Biz
                 );
             var questions = q1.ToList();
 
-            object data;
+            object data = null;
             List<object> qdata = new List<object>();
 
             if(user.role.Equals("teacher_edu"))
@@ -470,7 +471,7 @@ namespace NBackend.Biz
                 foreach(var qu in questions)
                 {
                     int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
-
+                    int score = getScoreById(ctx, qu.QuestionId, exam_id);
                     qdata.Add(new
                     {
                         question_id = qu.QuestionId,
@@ -479,7 +480,8 @@ namespace NBackend.Biz
                         content = qu.content,
                         options = qu.options,
                         answer = qu.answer,
-                        index
+                        index,
+                        score
                     });
                 }
                 
@@ -513,6 +515,7 @@ namespace NBackend.Biz
                     foreach (var qu in questions)
                     {
                         int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+                        int score = getScoreById(ctx, qu.QuestionId, exam_id);
 
                         qdata.Add(new
                         {
@@ -521,7 +524,8 @@ namespace NBackend.Biz
                             chapter = qu.chapter,
                             content = qu.content,
                             options = qu.options,
-                            index
+                            index,
+                            score,
                         });
                     }
                     data = new
@@ -538,6 +542,7 @@ namespace NBackend.Biz
                     foreach (var qu in questions)
                     {
                         int index = getQuestionIndex(ctx, exam_id, qu.QuestionId);
+                        int score = getScoreById(ctx, qu.QuestionId, exam_id);
 
                         qdata.Add(new
                         {
@@ -547,7 +552,8 @@ namespace NBackend.Biz
                             content = qu.content,
                             options = qu.options,
                             answer = qu.answer,
-                            index
+                            index,
+                            score
                         });
                     }
                     data = new
@@ -566,7 +572,7 @@ namespace NBackend.Biz
                 return Helper.JsonConverter.Error(400, "您没有权限(＾Ｕ＾)ノ~ＹＯ");
             }
 
-            return null;
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         private static Exam getExamById(NBackendContext ctx, int exam_id)
