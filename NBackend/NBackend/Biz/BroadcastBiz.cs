@@ -104,9 +104,9 @@ namespace NBackend.Biz
                         return Helper.JsonConverter.Error(400, "你没有权限呢");
                     }
                     //默认班级
-                    sec_id = 1;
+                    sec_id = 100003;
                     course_id = 2;
-                    year = 2019;
+                    year = 0;
                     semester = "Spring";
                 }
                 Broadcast broadcast = new Broadcast
@@ -162,7 +162,13 @@ namespace NBackend.Biz
 
                 NBackendContext ctx = new NBackendContext();
 
-                return ListToObj(_getBroadcastsOfClass(ctx, sec_id, course_id, year, semester));
+                var class_bros = _getBroadcastsOfClass(ctx, sec_id, course_id, year, semester);
+
+                if(class_bros == null)
+                {
+                    return new List<object>();
+                }
+                return ListToObj(class_bros);
             }
             catch(Exception e)
             {
@@ -179,17 +185,26 @@ namespace NBackend.Biz
             int user_id = Helper.JwtManager.DecodeToken(token);
 
             //获取用户的所有班级
-            var q = ctx.Takes.Where(take => take.StudentId == user_id).Select(take => take.Section);
+            var q = ctx.Takes.Where(take => take.StudentId == user_id).ToList().Select(take => new { take.secId,take.courseId,take.semester,take.year}).ToList();
+
+            if (q.Any())
+            {
+                var sec = q.Single();
+            }
 
             //var secs = q.ToList();
-            var q1 = ctx.Broadcasts.Join(q, bro => bro.Section, sec => sec,
+            var q1 = ctx.Broadcasts.ToList().Join(q, take=> new { take.secId, take.courseId, take.semester, take.year }, sec => sec,
                 (bro, sec) => bro
-                );
+                ).ToList();
 
             //.Join(ctx.Courses, bro=>bro.Course, course=>course,
             //    (bro, course) => new {bro, course.}
 
             List<Broadcast> all_sec_exams = new List<Broadcast>();
+            foreach(var bro in q1)
+            {
+                all_sec_exams.Add(bro);
+            }
 
             return all_sec_exams;
         }
@@ -240,7 +255,9 @@ namespace NBackend.Biz
                 return null;
             }
 
-            var q = ctx.Broadcasts.ToList().Where(broadcast => broadcast.Section.Equals(sec));
+            var q = ctx.Broadcasts.ToList().Where(broadcast => broadcast.semester ==sec.semester && broadcast.year == sec.year
+            && broadcast.secId == sec.SecId && broadcast.courseId == sec.courseId && broadcast.scope == SCOPE_CLASS
+            ).ToList();
             var broadcasts = q.ToList();
 
             return broadcasts;
@@ -250,7 +267,9 @@ namespace NBackend.Biz
         {
 
             var q = ctx.Broadcasts.Where(bro => bro.scope == SCOPE_GOLBAL);
-            return q.ToList();
+            var bros =  q.ToList();
+
+            return bros;
         }
 
         //获取全局广播
