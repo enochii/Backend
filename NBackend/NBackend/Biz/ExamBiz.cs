@@ -419,6 +419,28 @@ namespace NBackend.Biz
             //return -1;
         }
 
+        public static string getCurTime()
+        {
+            string datePatt = @"MM/dd/yyyy hh:mm:ss tt";
+            string cur_time = DateTime.Now.ToLocalTime().ToString(datePatt).Replace('/', '.');
+
+            return cur_time;
+        }
+
+        public static bool isExamFinished(Exam ex)
+        {
+             //ex = getExamById(ctx, exam_id);
+
+            string cur_time = getCurTime();
+
+
+            bool exam_ended = false;
+            if (cur_time.CompareTo(ex.end_time) != -1)
+            {
+                exam_ended = true;
+            }
+            return exam_ended;
+        }
 
         //获取某张试卷所有的题目，包括学生考试前后和老师查看
         public static object getQuestionsOfExam(string token, object json)
@@ -498,16 +520,12 @@ namespace NBackend.Biz
 
                 //var ex = q2.Single().Exam;
                 var ex = getExamById(ctx, exam_id);
-
-                string datePatt = @"MM/dd/yyyy hh:mm:ss tt";
-                string cur_time = DateTime.Now.ToLocalTime().ToString(datePatt).Replace('/', '.');
-
-
-                bool exam_ended = false;
-                if (cur_time.CompareTo(ex.end_time) != -1)
+                if (ex == null)
                 {
-                    exam_ended = true;
+                    return Helper.JsonConverter.Error(400, "考试没了！");
                 }
+
+                bool exam_ended = isExamFinished(ex);
 
                 //没参加过这场考试并且没超时
                 if (!q2.Any() && !exam_ended)
@@ -734,40 +752,61 @@ namespace NBackend.Biz
             var body = Helper.JsonConverter.Decode(json);
             int exam_id = int.Parse(body["exam_id"]);
 
+            //ToList()及时求值定位错误快点。。。
             //通过exam取出班级，再取出班级的所有人
             //真糖！
-            var qstus = ctx.Exams.Join(ctx.Takes, ex => ex.Section, take => take.Section,
-                (ex, take) => new { exam_id, take.Student }
-                );
+            var qstus = ctx.Exams.Join(ctx.Takes, ex => new { ex.year,ex.courseId},//最多两个键？Section又不行。。。
+                take => new{ take.Section.year, take.Section.courseId},
+                (ex, take) => new { exam_id, take,ex.semester,ex.secId }
+                ).Where(_=>_.take.Section.semester == _.semester&&_.take.Section.SecId == _.secId).Select(_=>new { _.take.Student, _.exam_id}).ToList();
             //获得参加本场考试的学生的信息和分数
             var qstus_taken = qstus.Join(ctx.TakesExams, stu => stu.Student, te => te.Student,
                 (stu, te) => new { stu, te.score }
-                ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score });
+                ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score }).ToList();
 
             //拿到所有学生
             var qstus_only = qstus.Select(stu => stu.Student);
-            var qstus_not_taken = qstus_only.Except(qstus_taken.Select(stu_score => stu_score.Student));
+            var qstus_not_taken = qstus_only.Except(qstus_taken.Select(stu_score => stu_score.Student)).ToList();
 
             List<object> all_stu_score= new List<object>();
             //User student = getUserById()
 
-            foreach(var stu  in qstus_taken)
+            var _ex = getExamById(ctx, exam_id);
+            if (_ex == null)
             {
-                User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
-                all_stu_score.Add(new
-                {
-                    student_name = stu.Student.StudentId,
-                    student_id = _user.user_name,
-                    score = stu.score
-                });
+                return Helper.JsonConverter.Error(404, "考试不存在");
             }
+
+            //判断考试是否结束
+            bool exam_ended = isExamFinished(_ex);
+
+            try
+            {
+                foreach (var stu in qstus_taken)
+                {
+                    User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
+                    all_stu_score.Add(new
+                    {
+                        student_id = stu.Student.StudentId,
+                        student_name = _user.user_name,
+                        exam_ended,
+                        score = stu.score
+                    });
+                }
+            }
+            catch(Exception e)
+            {
+                //int i;
+            }
+
             foreach (var stu in qstus_not_taken)
             {
                 User _user = UserBiz.getUserById(ctx, stu.StudentId);
                 all_stu_score.Add(new
                 {
-                    student_name = stu.StudentId,
-                    student_id = _user.user_name,
+                    student_id = stu.StudentId,
+                    student_name = _user.user_name,
+                    exam_ended,
                     score = 0
                 });
             }
