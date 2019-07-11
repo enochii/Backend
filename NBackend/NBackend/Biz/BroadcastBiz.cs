@@ -288,7 +288,7 @@ namespace NBackend.Biz
         public static object deleteBroadcast(string token, object json)
         {
             var body = JsonConverter.Decode(json);
-            int broadcast_id = int.Parse(body["broadcast"]);
+            int broadcast_id = int.Parse(body["broadcast_id"]);
             int user_id = JwtManager.DecodeToken(token);
 
             NBackendContext ctx = new NBackendContext();

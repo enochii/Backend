@@ -121,7 +121,7 @@ namespace NBackend.Biz
 
             try
             {
-                var exam_id = (int)body["exam_id"];
+                var exam_id = (int)(long)body["exam_id"];
                 var questions = (JArray)body["questions"];
 
                 //var _body = JsonConvert.DeserializeObject<List<object>>(questions);
@@ -139,9 +139,9 @@ namespace NBackend.Biz
                         rates.ToDictionary(pair => pair.Key,
                                            pair => (object)pair.Value);
 
-                    int question_id = (int)__body["question_id"];
+                    int question_id = ((JValue)__body["question_id"]).Value<int>();
 
-                    string answer = (string)__body["answer"];
+                    string answer = ((JValue)__body["answer"]).Value<string>();
 
                     Question question = getQuestionById(ctx, question_id);
                     if (question.answer.Equals(answer))
@@ -161,8 +161,9 @@ namespace NBackend.Biz
 
                 return Helper.JsonConverter.BuildResult(null);
             }
-            catch
+            catch(Exception e)
             {
+                //throw e;
                 return Helper.JsonConverter.Error(400, "提交失败");
             }
         }
@@ -505,6 +506,7 @@ namespace NBackend.Biz
                         index,
                         score
                     });
+                    data = qdata;
                 }
                 
             }
