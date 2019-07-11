@@ -29,6 +29,10 @@ namespace NBackend.Helper
                 }
                 throw;
             }
+            catch(Exception e)
+            {
+                throw;
+            }
         }
     }
 }

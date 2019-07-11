@@ -31,6 +31,7 @@ namespace NBackend.Controllers
             return Biz.BroadcastBiz.GetAllHomework(json);
         }
 
+        //创建广播
         [AllowAnonymous]
         [HttpPost]
         [Route("api/broadcasts")]

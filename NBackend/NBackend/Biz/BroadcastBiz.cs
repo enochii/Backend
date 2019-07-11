@@ -104,9 +104,9 @@ namespace NBackend.Biz
                     return Helper.JsonConverter.Error(400, "你没有权限呢");
                 }
                 //默认班级
-                sec_id = 0;
-                course_id = 0;
-                year = 1997;
+                sec_id = 1;
+                course_id = 2;
+                year = 2019;
                 semester = "Spring";
             }
             Broadcast broadcast = new Broadcast
@@ -116,11 +116,12 @@ namespace NBackend.Biz
                 year = year,
                 semester = semester,
 
-                scope = SCOPE_CLASS,
+                scope = scope,
                 type = type,
                 start_time = start_time,
                 publish_time = published_time,
                 end_time = end_time,
+                content = content
             };
 
             ctx.TeacherBroadcasts.Add(new TeacherBroadcast
@@ -130,7 +131,7 @@ namespace NBackend.Biz
             });
 
             ctx.Broadcasts.Add(broadcast);
-            ctx.SaveChanges();
+            ValidationHelper.safeSaveChanges(ctx);
 
             var data = new
             {
