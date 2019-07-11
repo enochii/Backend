@@ -38,6 +38,17 @@ namespace NBackend.Controllers
             return ExamBiz.postExam(token, json);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("api/finished_exam")]
+        public object FinishExam(object json)
+        {
+            var token = Request.Headers.Authorization.Parameter;
+
+            return ExamBiz.finishExam(token, json);
+        }
+
+
         //个人成绩总结
         [AllowAnonymous]
         [HttpGet]
@@ -148,6 +159,7 @@ namespace NBackend.Controllers
         [Route("api/class_exams")]
         [Route("api/course_questions")]
         [Route("api/questions")]
+        [Route("api/finished_exam")]
         [Route("api/exams")]
         public object Options()
         {
