@@ -23,21 +23,21 @@ namespace NBackend.Migrations
             //  to avoid creating duplicate seed data. E.g.
             //
 
-            context.Discussions.AddOrUpdate(
-                  p => p.secId,
-                  new Models.Discussion
-                  {
-                      secId = 1,
-                      courseId = 2,
-                      semester = "Spring",
-                      year = 2019,
-                      userId = 1753122,
-                      content = "hhh",
-                      time = "2019.07.10 18:00",
-                      is_comment = false,
-                      //comments = null
-                  }
-                );
+            //context.Discussions.AddOrUpdate(
+            //      p => p.secId,
+            //      new Models.Discussion
+            //      {
+            //          secId = 1,
+            //          courseId = 2,
+            //          semester = "Spring",
+            //          year = 2019,
+            //          userId = 1753122,
+            //          content = "hhh",
+            //          time = "2019.07.10 18:00",
+            //          is_comment = false
+            //          //comments = null
+            //      }
+            //    );
             //context.Users.AddOrUpdate(
             //  p => p.user_name,
             //  new Models.User

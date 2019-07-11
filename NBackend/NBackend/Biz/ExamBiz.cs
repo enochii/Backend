@@ -506,6 +506,7 @@ namespace NBackend.Biz
                         index,
                         score
                     });
+                    data = qdata;
                 }
                 
             }

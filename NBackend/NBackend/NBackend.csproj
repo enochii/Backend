@@ -229,6 +229,7 @@
     <Compile Include="Helper\JsonConverter.cs" />
     <Compile Include="Helper\TokenManager.cs" />
     <Compile Include="Helper\UserHelper.cs" />
+    <Compile Include="Helper\ValidationHelper.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.cs" />
     <Compile Include="Migrations\201907071330004_InitialCreate.Designer.cs">
       <DependentUpon>201907071330004_InitialCreate.cs</DependentUpon>
@@ -304,6 +305,10 @@
     <Compile Include="Migrations\201907101938334_attention.cs" />
     <Compile Include="Migrations\201907101938334_attention.Designer.cs">
       <DependentUpon>201907101938334_attention.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907110840367_change-length.cs" />
+    <Compile Include="Migrations\201907110840367_change-length.Designer.cs">
+      <DependentUpon>201907110840367_change-length.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Attention.cs" />
@@ -473,6 +478,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201907101938334_attention.resx">
       <DependentUpon>201907101938334_attention.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907110840367_change-length.resx">
+      <DependentUpon>201907110840367_change-length.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

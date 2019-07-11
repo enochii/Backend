@@ -31,6 +31,7 @@ namespace NBackend.Controllers
         [AllowAnonymous]
         [HttpPost]
         [Route("api/exams")]
+        //创建考试
         public object PostExam(object json)
         {
             var token = Request.Headers.Authorization.Parameter;
@@ -40,6 +41,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        //学生提交考试
         [Route("api/finished_exam")]
         public object FinishExam(object json)
         {
@@ -72,6 +74,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        //教师查看某个班级的所有考试成绩
         [Route("api/exam_results")]
         public object GetExamResult(object json)
         {
@@ -82,6 +85,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        //获取班级的所有考试
         [Route("api/class_exams")]
         public object GetClassExams(object json)
         {
@@ -92,6 +96,7 @@ namespace NBackend.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        //获取试卷内容，包括学生考试前后，老师的上帝视角
         [Route("api/exam_questions")]
         public object GetExamQuestions(object json)
         {
