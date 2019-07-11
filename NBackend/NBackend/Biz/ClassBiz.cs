@@ -123,13 +123,14 @@ namespace NBackend.Biz
         }
 
         //学生获取一个特定班级的信息，包括学生人数
-        public static object GetOneClass(object json)
+        public static object GetOneClass(object json,string token)
         {
             var body = Helper.JsonConverter.Decode(json);
             var sec_id = int.Parse(body["sec_id"]);
             var course_id = int.Parse(body["course_id"]);
             var semester = body["semester"];
             var year = int.Parse(body["year"]);
+            var user_id = Helper.JwtManager.DecodeToken(token);
 
             using (var context = new NBackendContext())
             {
@@ -163,6 +164,14 @@ namespace NBackend.Biz
 
                 var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                  && a.semester == semester && a.year == year && a.validate_status == true);
+                int if_join = 0;
+                var this_student = students.Where(a => a.StudentId == user_id);
+                if (this_student.Any())
+                {
+                    if_join = 1;
+                }
+                if (this_student.Single().validate_status == true)
+                    if_join = 2;
                 var data = new
                 {
                     sec_id,
@@ -176,7 +185,8 @@ namespace NBackend.Biz
                     user_name = the_teacher.teacher_name,
                     course_name = the_course.course_name,
                     course_description = the_course.description,
-                    student_number = students.Count()
+                    student_number = students.Count(),
+                    status = if_join
                 };
 
                 return Helper.JsonConverter.BuildResult(data);

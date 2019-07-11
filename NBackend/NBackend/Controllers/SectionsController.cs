@@ -32,8 +32,8 @@ namespace NBackend.Controllers
         [Route("api/one_class")]
         public object GetOneSection(object json)
         {
-            //String token = Request.Headers.Authorization.Parameter;
-            return Biz.ClassBiz.GetOneClass(json);
+            String token = Request.Headers.Authorization.Parameter;
+            return Biz.ClassBiz.GetOneClass(json,token);
         }
 
         [AllowAnonymous]

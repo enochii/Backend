@@ -89,6 +89,12 @@ namespace NBackend.Biz
                 {
                     return Helper.JsonConverter.Error(400, "这个班有问题啊");
                 }
+                var any_records = context.Attentions.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                            && a.semester == semester && a.year == year&&a.timeId==time_id);
+                if (any_records.Any())
+                {
+                    return Helper.JsonConverter.Error(400, "已经生成过这次课的出席记录辽");
+                }
 
                 var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                             && a.semester == semester && a.year == year);
@@ -143,6 +149,30 @@ namespace NBackend.Biz
                 }
                 context.SaveChanges();
                 return Helper.JsonConverter.BuildResult(null);
+            }
+        }
+
+        public static object GetAttendanceSummary(object json,string token)
+        {
+            var body = Helper.JsonConverter.Decode(json);
+            //var sec_id = int.Parse(body["sec_id"]);
+            //var course_id = int.Parse(body["course_id"]);
+            var semester = body["semester"];
+            var year = int.Parse(body["year"]);
+            var user_id = Helper.JwtManager.DecodeToken(token);
+
+            using (var context = new NBackendContext())
+            {
+                var total_records = context.Attentions.Where(a => a.StudentId == user_id&&a.semester==semester&&a.year==year);
+                var total_absent = total_records.Where(a => a.status == 2 || a.status == 3);
+
+                var data = new
+                {
+                   total_attendance = total_records.Count(),
+                   total_absent = total_absent.Count()
+                };
+
+                return Helper.JsonConverter.BuildResult(data);
             }
         }
 
