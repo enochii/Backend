@@ -64,37 +64,41 @@ namespace NBackend.Biz
         //获取班级列表信息
         public static object GetAllClasses()
         {
-            using (var context = new NBackendContext())
+            try
             {
-                var classes = context.Sections;
-                var list = new List<object>();
-                if (!classes.Any())
+                using (var context = new NBackendContext())
                 {
-                    return Helper.JsonConverter.Error(400, "现在还没有已经创建的班级");
-                }
+                    var classes = context.Sections;
+                    var list = new List<object>();
+                    if (!classes.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "现在还没有已经创建的班级");
+                    }
 
-                foreach (var a_class in classes)
-                {
-                    var a_course = (from each_course in context.Courses
-                                    where each_course.CourseId == a_class.courseId
-                                    select new
-                                    {
-                                        course_name = each_course.course_name,
-                                        description = each_course.description
-                                    });
-                    var a_teacher = (from each_class in context.Sections
-                                     join each_teaching in context.Teaches
-                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                     where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
-                                     select new
-                                     {
-                                         teacher_name = each_user.user_name,
-                                         avatar = each_class.avatar
-                                     });
-                    var the_course = a_course.Single();
-                    var the_teacher = a_teacher.Single();
+                    foreach (var a_class in classes)
+                    {
+                        var a_course = (from each_course in context.Courses
+                                        where each_course.CourseId == a_class.courseId
+                                        select new
+                                        {
+                                            course_name = each_course.course_name,
+                                            description = each_course.description
+                                        });
+                        var a_teacher = (from each_class in context.Sections
+                                         join each_teaching in context.Teaches
+                                              on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                              equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                         join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                         where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                         select new
+                                         {
+                                             teacher_name = each_user.user_name,
+                                             avatar = each_class.avatar
+                                         });
+
+                        var the_course = a_course.Single();
+                        var the_teacher = a_teacher.Single();
+                    }
 
 
                     list.Add(new
@@ -111,120 +115,263 @@ namespace NBackend.Biz
                         course_name = the_course.course_name,
                         course_description = the_course.description
                     });
+
+
+                    var data = new
+                    {
+                        classes = list
+                    };
                 }
-
-                var data = new
-                {
-                    classes = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
             }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
+            }
+
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         //学生获取一个特定班级的信息，包括学生人数
         public static object GetOneClass(object json, string token)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var sec_id = int.Parse(body["sec_id"]);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-            var user_id = Helper.JwtManager.DecodeToken(token);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
-                if (!a_class.Any())
+                var body = Helper.JsonConverter.Decode(json);
+                var sec_id = int.Parse(body["sec_id"]);
+                var course_id = int.Parse(body["course_id"]);
+                var semester = body["semester"];
+                var year = int.Parse(body["year"]);
+                var user_id = Helper.JwtManager.DecodeToken(token);
+
+                using (var context = new NBackendContext())
                 {
-                    return Helper.JsonConverter.Error(400, "不存在这个班级");
+                    var a_class = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id && a.semester == semester && a.year == year);
+                    if (!a_class.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "不存在这个班级");
+                    }
+
+                    var the_class = a_class.Single();
+                    var a_course = (from each_course in context.Courses
+                                    where each_course.CourseId == the_class.courseId
+                                    select new
+                                    {
+                                        course_name = each_course.course_name,
+                                        description = each_course.description
+                                    });
+                    var a_teacher = (from each_class in context.Sections
+                                     join each_teaching in context.Teaches
+                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                     where each_class.SecId == the_class.SecId && each_class.courseId == the_class.courseId && each_class.semester == the_class.semester && each_class.year == the_class.year
+                                     select new
+                                     {
+                                         teacher_name = each_user.user_name,
+                                         avatar = each_class.avatar
+                                     });
+
+                    var the_course = a_course.Single();
+                    var the_teacher = a_teacher.Single();
+
+
+
+                    var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                     && a.semester == semester && a.year == year);
+                    int if_join = 0;
+                    var this_student = students.Where(a => a.StudentId == user_id);
+                    if (this_student.Any())
+                    {
+                        if_join = 1;
+                        if (this_student.Single().validate_status == true)
+                            if_join = 2;
+                    }
+                    var data = new
+                    {
+                        sec_id,
+                        course_id,
+                        semester,
+                        year,
+                        building = the_class.building,
+                        room_number = the_class.room_numer,
+                        time_slots = get_time_info(the_class.SecId, the_class.courseId, the_class.semester, the_class.year),
+                        avatar = the_teacher.avatar,
+                        user_name = the_teacher.teacher_name,
+                        course_name = the_course.course_name,
+                        course_description = the_course.description,
+                        student_number = students.Count(),
+                        status = if_join
+                    };
                 }
-
-                var the_class = a_class.Single();
-                var a_course = (from each_course in context.Courses
-                                where each_course.CourseId == the_class.courseId
-                                select new
-                                {
-                                    course_name = each_course.course_name,
-                                    description = each_course.description
-                                });
-                var a_teacher = (from each_class in context.Sections
-                                 join each_teaching in context.Teaches
-                                      on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                      equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                 join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                 where each_class.SecId == the_class.SecId && each_class.courseId == the_class.courseId && each_class.semester == the_class.semester && each_class.year == the_class.year
-                                 select new
-                                 {
-                                     teacher_name = each_user.user_name,
-                                     avatar = each_class.avatar
-                                 });
-                var the_course = a_course.Single();
-                var the_teacher = a_teacher.Single();
-
-                var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                 && a.semester == semester && a.year == year);
-                int if_join = 0;
-                var this_student = students.Where(a => a.StudentId == user_id);
-                if (this_student.Any())
-                {
-                    if_join = 1;
-                    if (this_student.Single().validate_status == true)
-                        if_join = 2;
-                }
-                var data = new
-                {
-                    sec_id,
-                    course_id,
-                    semester,
-                    year,
-                    building = the_class.building,
-                    room_number = the_class.room_numer,
-                    time_slots = get_time_info(the_class.SecId, the_class.courseId, the_class.semester, the_class.year),
-                    avatar = the_teacher.avatar,
-                    user_name = the_teacher.teacher_name,
-                    course_name = the_course.course_name,
-                    course_description = the_course.description,
-                    student_number = students.Count(),
-                    status = if_join
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
             }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "请检查数据输入和字段名称，检查数据库表一致性");
+            }
+
+            return Helper.JsonConverter.BuildResult(data);
         }
 
         //学生获取所有参与的班级信息，教师获取所有教过的班级信息
         public static object GetMyClass(object json, string token)
         {
-            //var body = Helper.JsonConverter.Decode(json);
-            //var sec_id = int.Parse(body["sec_id"]);
-            //var course_id = int.Parse(body["course_id"]);
-            //var semester = body["semester"];
-            //var year = int.Parse(body["year"]);
-            var user_id = Helper.JwtManager.DecodeToken(token);
-
-            using (var context = new NBackendContext())
+            try
             {
-                int student_or_teacher = 0;
-                if (context.Users.Where(a => a.Id == user_id).Any())
+                var user_id = Helper.JwtManager.DecodeToken(token);
+
+                using (var context = new NBackendContext())
                 {
-                    if (context.Users.Single(a => a.Id == user_id).role == "student")
-                        student_or_teacher = 1;
+                    int student_or_teacher = 0;
+                    if (context.Users.Where(a => a.Id == user_id).Any())
+                    {
+                        if (context.Users.Single(a => a.Id == user_id).role == "student")
+                            student_or_teacher = 1;
+                        else
+                            student_or_teacher = 2;
+                    }
                     else
-                        student_or_teacher = 2;
+                        return Helper.JsonConverter.Error(400, "这个人有问题啊");
+
+                    var list = new List<object>();
+
+                    if (student_or_teacher == 1)
+                    {
+                        var some_classes = (from each_class in context.Sections
+                                            join each_taking in context.Takes
+                                                on new { each_class.courseId, each_class.semester, each_class.year }
+                                                equals new { each_taking.courseId, each_taking.semester, each_taking.year }
+                                            where each_class.SecId == each_taking.secId && each_taking.StudentId == user_id && each_taking.validate_status == true
+                                            select new
+                                            {
+                                                SecId = each_class.SecId,
+                                                courseId = each_class.courseId,
+                                                year = each_class.year,
+                                                semester = each_class.semester,
+                                                score = each_taking.score
+                                            });
+                        foreach (var a_class in some_classes)
+                        {
+                            var a_course = (from each_course in context.Courses
+                                            where each_course.CourseId == a_class.courseId
+                                            select new
+                                            {
+                                                course_name = each_course.course_name,
+                                                description = each_course.description
+                                            });
+                            var a_teacher = (from each_class in context.Sections
+                                             join each_teaching in context.Teaches
+                                                  on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                                  equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                             join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                             where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                             select new
+                                             {
+                                                 teacher_name = each_user.user_name,
+                                                 avatar = each_class.avatar
+                                             });
+                            var the_course = a_course.Single();
+                            var the_teacher = a_teacher.Single();
+
+                            list.Add(new
+                            {
+                                sec_id = a_class.SecId,
+                                course_id = a_class.courseId,
+                                semester = a_class.semester,
+                                year = a_class.year,
+                                score = a_class.score,
+                                time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
+                                avatar = the_teacher.avatar,
+                                user_name = the_teacher.teacher_name,
+                                course_name = the_course.course_name,
+                                course_description = the_course.description
+                            });
+                        }
+                    }
+                    else if (student_or_teacher == 2)
+                    {
+                        var a_teacher = (from each_class in context.Sections
+                                         join each_teaching in context.Teaches
+                                              on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                              equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                         join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                         where each_teaching.TeacherId == user_id
+                                         select new
+                                         {
+                                             year = each_class.year,
+                                             semester = each_class.semester,
+                                             course_id = each_class.courseId,
+                                             sec_id = each_class.SecId,
+                                             teacher_name = each_user.user_name,
+                                             avatar = each_class.avatar
+                                         });
+                        foreach (var a_class in a_teacher)
+                        {
+                            var a_course = (from each_course in context.Courses
+                                            where each_course.CourseId == a_class.course_id
+                                            select new
+                                            {
+                                                course_name = each_course.course_name,
+                                                description = each_course.description
+                                            });
+
+                            var the_course = a_course.Single();
+                            list.Add(new
+                            {
+                                sec_id = a_class.sec_id,
+                                course_id = a_class.course_id,
+                                semester = a_class.semester,
+                                year = a_class.year,
+                                time_slots = get_time_info(a_class.sec_id, a_class.course_id, a_class.semester, a_class.year),
+                                avatar = a_class.avatar,
+                                user_name = a_class.teacher_name,
+                                course_name = the_course.course_name,
+                                course_description = the_course.description
+                            });
+                        }
+
+                    }
+
+                    var data = new
+                    {
+                        classes = list
+                    };
                 }
-                else
-                    return Helper.JsonConverter.Error(400, "这个人有问题啊");
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
+            }
 
-                var list = new List<object>();
+            return Helper.JsonConverter.BuildResult(data);
+        }
 
-                if (student_or_teacher == 1)
+        //获取某个学生某个学期参加的班级信息
+        public static object GetPartClass(object json, string token)
+        {
+            try
+            {
+                var body = Helper.JsonConverter.Decode(json);
+                var year = int.Parse(body["year"]);
+                var semester = body["semester"];
+                var student_id = Helper.JwtManager.DecodeToken(token);
+
+                using (var context = new NBackendContext())
                 {
+                    var any_student = context.Users.Where(a => a.Id == student_id && a.role == "student");
+                    if (!any_student.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "这个人有问题");
+                    }
+
                     var some_classes = (from each_class in context.Sections
                                         join each_taking in context.Takes
                                             on new { each_class.courseId, each_class.semester, each_class.year }
                                             equals new { each_taking.courseId, each_taking.semester, each_taking.year }
-                                        where each_class.SecId == each_taking.secId && each_taking.StudentId == user_id && each_taking.validate_status == true
+                                        where each_class.SecId == each_taking.secId && each_class.semester == semester &&
+                                                each_class.year == year && each_taking.StudentId == student_id && each_taking.validate_status == true
                                         select new
                                         {
                                             SecId = each_class.SecId,
@@ -233,6 +380,13 @@ namespace NBackend.Biz
                                             semester = each_class.semester,
                                             score = each_taking.score
                                         });
+                    //if (!some_classes.Any())
+                    //{
+                    //    return Helper.JsonConverter.Error(400, "该学生在该学期没有加入任何班级");
+                    //}
+
+                    var list = new List<object>();
+
                     foreach (var a_class in some_classes)
                     {
                         var a_course = (from each_course in context.Courses
@@ -260,8 +414,8 @@ namespace NBackend.Biz
                         {
                             sec_id = a_class.SecId,
                             course_id = a_class.courseId,
-                            semester = a_class.semester,
-                            year = a_class.year,
+                            semester = semester,
+                            year = year,
                             //building = a_class.building,
                             //room_number = a_class.room_numer,
                             //section_time_id = a_class.section_timeId,
@@ -273,259 +427,123 @@ namespace NBackend.Biz
                             course_description = the_course.description
                         });
                     }
-                }
-                else if (student_or_teacher == 2)
-                {
-                    var a_teacher = (from each_class in context.Sections
-                                     join each_teaching in context.Teaches
-                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                     where each_teaching.TeacherId == user_id
-                                     select new
-                                     {
-                                         year = each_class.year,
-                                         semester = each_class.semester,
-                                         course_id = each_class.courseId,
-                                         sec_id = each_class.SecId,
-                                         teacher_name = each_user.user_name,
-                                         avatar = each_class.avatar
-                                     });
-                    foreach (var a_class in a_teacher)
+
+                    var data = new
                     {
-                        var a_course = (from each_course in context.Courses
-                                        where each_course.CourseId == a_class.course_id
-                                        select new
-                                        {
-                                            course_name = each_course.course_name,
-                                            description = each_course.description
-                                        });
+                        classes = list
+                    };
 
-                        var the_course = a_course.Single();
-                        //var the_teacher = a_teacher.Single();
-                        list.Add(new
-                        {
-                            sec_id = a_class.sec_id,
-                            course_id = a_class.course_id,
-                            semester = a_class.semester,
-                            year = a_class.year,
-                            //building = a_class.building,
-                            //room_number = a_class.room_numer,
-                            //section_time_id = a_class.section_timeId,
-                            //score = a_class.score,
-                            time_slots = get_time_info(a_class.sec_id, a_class.course_id, a_class.semester, a_class.year),
-                            avatar = a_class.avatar,
-                            user_name = a_class.teacher_name,
-                            course_name = the_course.course_name,
-                            course_description = the_course.description
-                        });
-                    }
-
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var data = new
-                {
-                    classes = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
             }
-        }
-
-        //获取某个学生某个学期参加的班级信息
-        public static object GetPartClass(object json, string token)
-        {
-            var body = Helper.JsonConverter.Decode(json);
-            var year = int.Parse(body["year"]);
-            var semester = body["semester"];
-            var student_id = Helper.JwtManager.DecodeToken(token);
-
-            using (var context = new NBackendContext())
+            catch (Exception e)
             {
-                var any_student = context.Users.Where(a => a.Id == student_id && a.role == "student");
-                if (!any_student.Any())
-                {
-                    return Helper.JsonConverter.Error(400, "这个人有问题");
-                }
-
-                var some_classes = (from each_class in context.Sections
-                                    join each_taking in context.Takes
-                                        on new { each_class.courseId, each_class.semester, each_class.year }
-                                        equals new { each_taking.courseId, each_taking.semester, each_taking.year }
-                                    where each_class.SecId == each_taking.secId && each_class.semester == semester &&
-                                            each_class.year == year && each_taking.StudentId == student_id && each_taking.validate_status == true
-                                    select new
-                                    {
-                                        SecId = each_class.SecId,
-                                        courseId = each_class.courseId,
-                                        year = each_class.year,
-                                        semester = each_class.semester,
-                                        score = each_taking.score
-                                    });
-                //if (!some_classes.Any())
-                //{
-                //    return Helper.JsonConverter.Error(400, "该学生在该学期没有加入任何班级");
-                //}
-
-                var list = new List<object>();
-
-                foreach (var a_class in some_classes)
-                {
-                    var a_course = (from each_course in context.Courses
-                                    where each_course.CourseId == a_class.courseId
-                                    select new
-                                    {
-                                        course_name = each_course.course_name,
-                                        description = each_course.description
-                                    });
-                    var a_teacher = (from each_class in context.Sections
-                                     join each_teaching in context.Teaches
-                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                     where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
-                                     select new
-                                     {
-                                         teacher_name = each_user.user_name,
-                                         avatar = each_class.avatar
-                                     });
-                    var the_course = a_course.Single();
-                    var the_teacher = a_teacher.Single();
-
-                    list.Add(new
-                    {
-                        sec_id = a_class.SecId,
-                        course_id = a_class.courseId,
-                        semester = semester,
-                        year = year,
-                        //building = a_class.building,
-                        //room_number = a_class.room_numer,
-                        //section_time_id = a_class.section_timeId,
-                        score = a_class.score,
-                        time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
-                        avatar = the_teacher.avatar,
-                        user_name = the_teacher.teacher_name,
-                        course_name = the_course.course_name,
-                        course_description = the_course.description
-                    });
-                }
-
-                var data = new
-                {
-                    classes = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "输入字段可能存在差错，数据库中可能存在不一致现象，请检查");
             }
         }
 
         //学生获取正在申请进入的班级
         public static object GetWaitingClass(string token)
         {
-            //var body = Helper.JsonConverter.Decode(json);
-            var student_id = Helper.JwtManager.DecodeToken(token);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var any_student = context.Users.Where(a => a.Id == student_id && a.role == "student");
-                if (!any_student.Any())
+                var student_id = Helper.JwtManager.DecodeToken(token);
+
+                using (var context = new NBackendContext())
                 {
-                    return Helper.JsonConverter.Error(400, "这个人有问题");
-                }
-
-                var some_classes = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
-                var list = new List<object>();
-
-                foreach (var a_class in some_classes)
-                {
-                    var a_course = (from each_course in context.Courses
-                                    where each_course.CourseId == a_class.courseId
-                                    select new
-                                    {
-                                        course_name = each_course.course_name,
-                                        description = each_course.description
-                                    });
-                    var a_teacher = (from each_class in context.Sections
-                                     join each_teaching in context.Teaches
-                                          on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                          equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                     join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                     where each_class.SecId == a_class.secId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
-                                     select new
-                                     {
-                                         teacher_name = each_user.user_name,
-                                         avatar = each_class.avatar
-                                     });
-                    var the_course = a_course.Single();
-                    var the_teacher = a_teacher.Single();
-
-                    list.Add(new
+                    var any_student = context.Users.Where(a => a.Id == student_id && a.role == "student");
+                    if (!any_student.Any())
                     {
-                        year = a_class.year,
-                        semester = a_class.semester,
-                        sec_id = a_class.secId,
-                        course_id = a_class.courseId,
-                        //building = each_class.building,
-                        //room_number = each_class.room_numer,
-                        //section_time_id = each_class.section_timeId
-                        time_slots = get_time_info(a_class.secId, a_class.courseId, a_class.semester, a_class.year),
-                        avatar = the_teacher.avatar,
-                        user_name = the_teacher.teacher_name,
-                        course_name = the_course.course_name,
-                        course_description = the_course.description
-                    });
+                        return Helper.JsonConverter.Error(400, "这个人有问题");
+                    }
+
+                    var some_classes = context.Takes.Where(a => a.StudentId == student_id && a.validate_status == false);
+                    var list = new List<object>();
+
+                    foreach (var a_class in some_classes)
+                    {
+                        var a_course = (from each_course in context.Courses
+                                        where each_course.CourseId == a_class.courseId
+                                        select new
+                                        {
+                                            course_name = each_course.course_name,
+                                            description = each_course.description
+                                        });
+                        var a_teacher = (from each_class in context.Sections
+                                         join each_teaching in context.Teaches
+                                              on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                              equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                         join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                         where each_class.SecId == a_class.secId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                         select new
+                                         {
+                                             teacher_name = each_user.user_name,
+                                             avatar = each_class.avatar
+                                         });
+                        var the_course = a_course.Single();
+                        var the_teacher = a_teacher.Single();
+
+                        list.Add(new
+                        {
+                            year = a_class.year,
+                            semester = a_class.semester,
+                            sec_id = a_class.secId,
+                            course_id = a_class.courseId,
+                            time_slots = get_time_info(a_class.secId, a_class.courseId, a_class.semester, a_class.year),
+                            avatar = the_teacher.avatar,
+                            user_name = the_teacher.teacher_name,
+                            course_name = the_course.course_name,
+                            course_description = the_course.description
+                        });
+                    }
+
+                    var data = new
+                    {
+                        classes = list
+                    };
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var data = new
-                {
-                    classes = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
-
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
         //教师申请待审核的学生
         public static object GetWaitingStudents(object json)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var sec_id = int.Parse(body["sec_id"]);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var waiting_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                           && a.semester == semester && a.year == year && a.validate_status == false);
-                //if (!waiting_students.Any())
-                //{
-                //    return Helper.JsonConverter.BuildResult(null);
-                //}
+                var body = Helper.JsonConverter.Decode(json);
+                var sec_id = int.Parse(body["sec_id"]);
+                var course_id = int.Parse(body["course_id"]);
+                var semester = body["semester"];
+                var year = int.Parse(body["year"]);
 
-                var students_info = (from student in waiting_students
-                                     join info in context.Users on student.StudentId equals info.Id
-                                     select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar }).ToArray();
-
-                /*var list = new List<object>();
-
-                foreach (var each_student in students_info)
+                using (var context = new NBackendContext())
                 {
-                    list.Add(new
+                    var waiting_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                               && a.semester == semester && a.year == year && a.validate_status == false);
+
+                    var students_info = (from student in waiting_students
+                                         join info in context.Users on student.StudentId equals info.Id
+                                         select new { student_id = student.StudentId, user_name = info.user_name, avatar = info.avatar }).ToArray();
+
+                    var data = new
                     {
-                        student_id = each_student.student_id,
-                        user_name = each_student.user_name,
-                        avatar = each_student.avatar
-                    });
-                }*/
+                        students_info
+                    };
+                    return Helper.JsonConverter.BuildResult(data);
 
-                var data = new
-                {
-                    students_info
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
@@ -756,8 +774,8 @@ namespace NBackend.Biz
 
             using (var context = new NBackendContext())
             {
-                var a_student = context.Takes.Where(a => a.StudentId == student_id && a.secId==sec_id&&a.courseId==course_id
-                                                    &&a.year==year&&a.semester==semester);
+                var a_student = context.Takes.Where(a => a.StudentId == student_id && a.secId == sec_id && a.courseId == course_id
+                                                    && a.year == year && a.semester == semester);
 
                 if (!a_student.Any())
                 {
