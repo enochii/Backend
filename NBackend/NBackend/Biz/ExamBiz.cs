@@ -45,15 +45,17 @@ namespace NBackend.Biz
                 User user = UserBiz.getUserById(ctx, user_id);
 
                 //参加的考试
-                var qexam_taken = ctx.TakesExams.Where(te => te.Student.StudentId == user_id);
+                var qexam_taken = ctx.TakesExams.Where(te => te.Student.StudentId == user_id).ToList();
 
                 //参加的课程的所有考试
-                var qexam_all = ctx.Takes.Where(take => take.StudentId == user_id).Join(ctx.Exams, take => take.Section, exam => exam.Section
-                , (take, exam) => exam
-                );
+                var qexam_all = ctx.Takes.Where(take => take.StudentId == user_id).Join(ctx.Exams, take => new { take.Section.SecId, take.Section.courseId },
+                    exam => new { exam.Section.SecId, exam.Section.courseId }
+                , (take, exam) => new { exam, take.Section }
+                ).Where(exam_sec => exam_sec.exam.Section.year == exam_sec.Section.year && exam_sec.exam.Section.semester == exam_sec.Section.semester).ToList()
+                .Select(te => te.exam).ToList ();
 
                 //没参加的考试成绩为0
-                var qexam_not_taken = qexam_all.Except(qexam_taken.Select(qt => qt.Exam));
+                var qexam_not_taken = qexam_all.Except(qexam_taken.Select(qt => qt.Exam)).ToList();
 
                 int exam_num = qexam_all.Count();
                 List<object> exams = new List<object>();
@@ -832,15 +834,19 @@ namespace NBackend.Biz
 
                 try
                 {
+                    int total_score = getTotalScore(ctx, exam_id);
+
                     foreach (var stu in qstus_taken)
                     {
+                        int grade = (int)(5.0 * stu.score / total_score);
                         User _user = UserBiz.getUserById(ctx, stu.Student.StudentId);
                         all_stu_score.Add(new
                         {
                             student_id = stu.Student.StudentId,
                             student_name = _user.user_name,
                             exam_ended,
-                            score = stu.score
+                            //score = stu.score
+                            grade
                         });
                     }
                 }
