@@ -12,7 +12,7 @@ namespace NBackend.Biz
 {
     public class ClassBiz
     {
-        //获取某个班级的开课时段
+        //在section表中找到某条记录
         public static Section getSection(NBackendContext ctx, int sec_id, int course_id, int year, string semester)
         {
             var q = ctx.Sections.Where(sec => sec.SecId == sec_id && sec.courseId == course_id
@@ -25,6 +25,7 @@ namespace NBackend.Biz
             return q.Single();
         }
 
+        //获取某个班级的开课时间段
         public static object get_time_info(int sec_id, int course_id, string semester, int year)
         {
             using (var context = new NBackendContext())
@@ -118,7 +119,7 @@ namespace NBackend.Biz
 
                     var data = new
                     {
-                        classes = list  
+                        classes = list
                     };
                     return Helper.JsonConverter.BuildResult(data);
                 }
@@ -129,7 +130,7 @@ namespace NBackend.Biz
                 return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
 
-          
+
         }
 
         //学生获取一个特定班级的信息，包括学生人数
@@ -175,8 +176,6 @@ namespace NBackend.Biz
                     var the_course = a_course.Single();
                     var the_teacher = a_teacher.Single();
 
-
-
                     var students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
                                                      && a.semester == semester && a.year == year);
                     int if_join = 0;
@@ -200,7 +199,7 @@ namespace NBackend.Biz
                         user_name = the_teacher.teacher_name,
                         course_name = the_course.course_name,
                         course_description = the_course.description,
-                        student_number = students.Count(),
+                        student_number = students.Where(a => a.validate_status == true).Count(),
                         status = if_join
                     };
                     return Helper.JsonConverter.BuildResult(data);
@@ -211,8 +210,6 @@ namespace NBackend.Biz
                 System.Console.Write(e.Message);
                 return Helper.JsonConverter.Error(410, "请检查数据输入和字段名称，检查数据库表一致性");
             }
-
-          
         }
 
         //学生获取所有参与的班级信息，教师获取所有教过的班级信息
@@ -346,7 +343,6 @@ namespace NBackend.Biz
                 System.Console.Write(e.Message);
                 return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
-
         }
 
         //获取某个学生某个学期参加的班级信息
@@ -361,72 +357,144 @@ namespace NBackend.Biz
 
                 using (var context = new NBackendContext())
                 {
-                    var any_student = context.Users.Where(a => a.Id == student_id && a.role == "student");
+                    var any_student = context.Users.Where(a => a.Id == student_id);
                     if (!any_student.Any())
                     {
                         return Helper.JsonConverter.Error(400, "这个人有问题");
                     }
 
-                    var some_classes = (from each_class in context.Sections
-                                        join each_taking in context.Takes
-                                            on new { each_class.courseId, each_class.semester, each_class.year }
-                                            equals new { each_taking.courseId, each_taking.semester, each_taking.year }
-                                        where each_class.SecId == each_taking.secId && each_class.semester == semester &&
-                                                each_class.year == year && each_taking.StudentId == student_id && each_taking.validate_status == true
-                                        select new
-                                        {
-                                            SecId = each_class.SecId,
-                                            courseId = each_class.courseId,
-                                            year = each_class.year,
-                                            semester = each_class.semester,
-                                            score = each_taking.score
-                                        });
-                    //if (!some_classes.Any())
-                    //{
-                    //    return Helper.JsonConverter.Error(400, "该学生在该学期没有加入任何班级");
-                    //}
-
                     var list = new List<object>();
 
-                    foreach (var a_class in some_classes)
+                    if (any_student.Single().role == "student")
                     {
-                        var a_course = (from each_course in context.Courses
-                                        where each_course.CourseId == a_class.courseId
-                                        select new
-                                        {
-                                            course_name = each_course.course_name,
-                                            description = each_course.description
-                                        });
-                        var a_teacher = (from each_class in context.Sections
-                                         join each_teaching in context.Teaches
-                                              on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
-                                              equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
-                                         join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
-                                         where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
-                                         select new
-                                         {
-                                             teacher_name = each_user.user_name,
-                                             avatar = each_class.avatar
-                                         });
-                        var the_course = a_course.Single();
-                        var the_teacher = a_teacher.Single();
+                        var some_classes = (from each_class in context.Sections
+                                            join each_taking in context.Takes
+                                                on new { each_class.courseId, each_class.semester, each_class.year }
+                                                equals new { each_taking.courseId, each_taking.semester, each_taking.year }
+                                            where each_class.SecId == each_taking.secId && each_class.semester == semester &&
+                                                    each_class.year == year && each_taking.StudentId == student_id && each_taking.validate_status == true
+                                            select new
+                                            {
+                                                SecId = each_class.SecId,
+                                                courseId = each_class.courseId,
+                                                year = each_class.year,
+                                                semester = each_class.semester,
+                                                score = each_taking.score,
+                                                building = each_class.building,
+                                                room_number = each_class.room_numer
+                                            });
 
-                        list.Add(new
+                        foreach (var a_class in some_classes)
                         {
-                            sec_id = a_class.SecId,
-                            course_id = a_class.courseId,
-                            semester = semester,
-                            year = year,
-                            //building = a_class.building,
-                            //room_number = a_class.room_numer,
-                            //section_time_id = a_class.section_timeId,
-                            score = a_class.score,
-                            time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year),
-                            avatar = the_teacher.avatar,
-                            user_name = the_teacher.teacher_name,
-                            course_name = the_course.course_name,
-                            course_description = the_course.description
-                        });
+                            var a_course = (from each_course in context.Courses
+                                            where each_course.CourseId == a_class.courseId
+                                            select new
+                                            {
+                                                course_name = each_course.course_name,
+                                                description = each_course.description
+                                            });
+                            var a_teacher = (from each_class in context.Sections
+                                             join each_teaching in context.Teaches
+                                                  on new { each_class.SecId, each_class.courseId, each_class.semester, each_class.year }
+                                                  equals new { each_teaching.SecId, each_teaching.courseId, each_teaching.semester, each_teaching.year }
+                                             join each_user in context.Users on each_teaching.TeacherId equals each_user.Id
+                                             where each_class.SecId == a_class.SecId && each_class.courseId == a_class.courseId && each_class.semester == a_class.semester && each_class.year == a_class.year
+                                             select new
+                                             {
+                                                 teacher_name = each_user.user_name,
+                                                 avatar = each_class.avatar
+                                             });
+                            var the_course = a_course.Single();
+                            var the_teacher = a_teacher.Single();
+
+                            var time_slots = (from section in context.Sections
+                                              join multiSectionTime in context.MultiSectionTimes on new { section.SecId, section.courseId, section.semester, section.year }
+                                                                                                 equals new { multiSectionTime.SecId, multiSectionTime.courseId, multiSectionTime.semester, multiSectionTime.year }
+                                              join sectionTime in context.SectionTimes on multiSectionTime.section_timeId equals sectionTime.SectionTimeId
+                                              where section.SecId == a_class.SecId && section.courseId == a_class.courseId && section.semester == a_class.semester && section.year == a_class.year
+                                              select new
+                                              {
+                                                  day = multiSectionTime.day,
+                                                  single_or_double = multiSectionTime.single_or_double,
+                                                  start_section = sectionTime.start_section,
+                                                  length = sectionTime.length
+                                              });
+                            //var time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year);
+                            foreach (var a_time_slot in time_slots)
+                            {
+                                list.Add(new
+                                {
+                                    user_name = the_teacher.teacher_name,
+                                    course_name = the_course.course_name,
+                                    day = int.Parse(a_time_slot.day),
+                                    single_or_double = a_time_slot.single_or_double,
+                                    start_section = a_time_slot.start_section,
+                                    length = a_time_slot.length,
+                                    building = a_class.building,
+                                    room_number = a_class.room_number
+                                    //course_description = the_course.description
+                                });
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var some_classes = (from each_class in context.Sections
+                                            join each_teach in context.Teaches
+                                                on new { each_class.courseId, each_class.semester, each_class.year }
+                                                equals new { each_teach.courseId, each_teach.semester, each_teach.year }
+                                            where each_class.SecId == each_teach.SecId && each_class.semester == semester &&
+                                                    each_class.year == year && each_teach.TeacherId == student_id
+                                            select new
+                                            {
+                                                SecId = each_class.SecId,
+                                                courseId = each_class.courseId,
+                                                year = each_class.year,
+                                                semester = each_class.semester,
+                                                building = each_class.building,
+                                                room_number = each_class.room_numer
+                                            });
+
+                        foreach (var a_class in some_classes)
+                        {
+                            var a_course = (from each_course in context.Courses
+                                            where each_course.CourseId == a_class.courseId
+                                            select new
+                                            {
+                                                course_name = each_course.course_name,
+                                                description = each_course.description
+                                            });
+                            var the_course = a_course.Single();
+                            var time_slots = (from section in context.Sections
+                                              join multiSectionTime in context.MultiSectionTimes on new { section.SecId, section.courseId, section.semester, section.year }
+                                                                                                 equals new { multiSectionTime.SecId, multiSectionTime.courseId, multiSectionTime.semester, multiSectionTime.year }
+                                              join sectionTime in context.SectionTimes on multiSectionTime.section_timeId equals sectionTime.SectionTimeId
+                                              where section.SecId == a_class.SecId && section.courseId == a_class.courseId && section.semester == a_class.semester && section.year == a_class.year
+                                              select new
+                                              {
+                                                  day = multiSectionTime.day,
+                                                  single_or_double = multiSectionTime.single_or_double,
+                                                  start_section = sectionTime.start_section,
+                                                  length = sectionTime.length
+                                              });
+                            //var time_slots = get_time_info(a_class.SecId, a_class.courseId, a_class.semester, a_class.year);
+                            foreach (var a_time_slot in time_slots)
+                            {
+                                list.Add(new
+                                {
+                                    user_name = any_student.Single().user_name,
+                                    course_name = the_course.course_name,
+                                    day = int.Parse(a_time_slot.day),
+                                    single_or_double = a_time_slot.single_or_double,
+                                    start_section = a_time_slot.start_section,
+                                    length = a_time_slot.length,
+                                    building = a_class.building,
+                                    room_number = a_class.room_number
+                                });
+
+                            }
+                        }
                     }
 
                     var data = new
@@ -513,7 +581,7 @@ namespace NBackend.Biz
             }
         }
 
-        //教师申请待审核的学生
+        //教师查看待审核的学生
         public static object GetWaitingStudents(object json)
         {
             try
@@ -667,6 +735,7 @@ namespace NBackend.Biz
                 return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
+
         //教师创建班级
         public static object CreateClass(object json)
         {
@@ -676,20 +745,15 @@ namespace NBackend.Biz
                 var jObject = new JObject();
                 jObject = JObject.Parse(json.ToString());
                 JArray jlist = JArray.Parse(jObject["time_slots"].ToString());
-                //var body = Helper.JsonConverter.Decode(json);
                 var course_id = int.Parse(jObject["course_id"].ToString());
                 var semester = jObject["semester"].ToString();
                 var year = int.Parse(jObject["year"].ToString());
                 var building = jObject["building"].ToString();
                 var room_number = jObject["room_number"].ToString();
-                //var section_time_id = int.Parse(jObject["section_time_id"].ToString());
                 var avatar = jObject["avatar"].ToString();
                 var start_week = int.Parse(jObject["start_week"].ToString());
                 var end_week = int.Parse(jObject["end_week"].ToString());
                 var user_id = int.Parse(jObject["user_id"].ToString());
-                //var time_slots = body["time_slots"].toString();
-                //var time_slots_dic = (JArray)JsonConvert.DeserializeObject(time_slots);
-                // var sec_id = int.Parse(body["sec_id"]);
 
                 //与数据库交互
                 using (var context = new NBackendContext())
@@ -709,39 +773,50 @@ namespace NBackend.Biz
                         }
                     }
 
-                    var any_teacher = context.Users.Where(a => a.Id == user_id);
+                    var any_teacher = context.Users.Where(a => a.Id == user_id && a.role != "student");
                     if (!any_teacher.Any())
                     {
                         return Helper.JsonConverter.Error(400, "不存在这个老师");
                     }
-                    //var any_classes = context.Sections.Where(a => a.courseId == course_id
-                    //                                            && a.semester == semester && a.year == year);
 
+                    if (avatar == null)
+                        avatar = "https://view.moezx.cc/images/2018/06/12/31133259.jpg";
+                    if (start_week < 1 || end_week > 17)
+                        return Helper.JsonConverter.Error(410, "开始周数或者结束周数不合理");
                     //插入班级
                     var the_class = new Section
                     {
-                        //SecId = sec_id,
                         courseId = course_id,
                         semester = semester,
                         year = year,
                         building = building,
                         room_numer = room_number,
-                        //section_timeId = section_time_id,
                         avatar = avatar,
                         start_week = start_week,
                         end_week = end_week,
                     };
+
+                    for (int i = 0; i < jlist.Count(); i++)
+                    {
+                        var day = jlist[i]["day"].ToString();
+                        var start_section = int.Parse(jlist[i]["start_section"].ToString());
+                        var length = int.Parse(jlist[i]["length"].ToString());
+                        var single_or_double = int.Parse(jlist[i]["single_or_double"].ToString());
+
+                        var any_time_slot = context.SectionTimes.Where(a => a.start_section == start_section && a.length == length);
+                        if (!any_time_slot.Any())
+                        {
+                            return Helper.JsonConverter.Error(400, "不存在这个时间方案");
+                        }
+                        var the_time_slot = any_time_slot.Single();
+                    }
+
                     context.Sections.Add(the_class);
                     context.SaveChanges();
-                    //var a_class = context.Sections.Where(a => a.courseId == course_id
-                    //                        && a.semester == semester && a.year == year).OrderByDescending(a => a.SecId);
-                    //var the_class = a_class.First();
 
                     //插入multisectiontime表
                     for (int i = 0; i < jlist.Count(); i++)
                     {
-                        //var a_time_slot = time_slots_dic[i].ToString();
-                        //var one_time_slot = JsonConvert.DeserializeObject<Dictionary<string, string>>( a_time_slot);
                         var day = jlist[i]["day"].ToString();
                         var start_section = int.Parse(jlist[i]["start_section"].ToString());
                         var length = int.Parse(jlist[i]["length"].ToString());
@@ -817,6 +892,7 @@ namespace NBackend.Biz
             }
         }
 
+        //获取开设的所有课程id
         public static object GetCourses()
         {
             try
@@ -851,6 +927,7 @@ namespace NBackend.Biz
 
         }
 
+        //获取一个班级的所有学生
         public static object GetStudents(object json)
         {
             try
@@ -864,7 +941,7 @@ namespace NBackend.Biz
                 using (var context = new NBackendContext())
                 {
                     var some_students = context.Takes.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                                && a.semester == semester && a.year == year);
+                                                                && a.semester == semester && a.year == year && a.validate_status == true);
                     var list = new List<object>();
 
                     foreach (var each_student in some_students)

@@ -33,7 +33,7 @@ namespace NBackend.Controllers
         public object GetOneSection(object json)
         {
             String token = Request.Headers.Authorization.Parameter;
-            return Biz.ClassBiz.GetOneClass(json,token);
+            return Biz.ClassBiz.GetOneClass(json, token);
         }
 
         [AllowAnonymous]
@@ -132,7 +132,7 @@ namespace NBackend.Controllers
             {
                 return Helper.JsonConverter.Error(401, "你还没登录？");
             }
-            return Biz.ClassBiz.GetOneClassDetails(json,token);
+            return Biz.ClassBiz.GetOneClassDetails(json, token);
         }
 
         [AllowAnonymous]
@@ -145,7 +145,7 @@ namespace NBackend.Controllers
             {
                 return Helper.JsonConverter.Error(401, "你还没登录？");
             }
-            return Biz.ClassBiz.JoinClass(json,token);
+            return Biz.ClassBiz.JoinClass(json, token);
         }
 
         [AllowAnonymous]

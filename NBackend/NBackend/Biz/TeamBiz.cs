@@ -15,214 +15,266 @@ namespace NBackend.Biz
         //获取队伍列表
         public static object GetTeams(object json)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var sec_id = int.Parse(body["sec_id"]);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var teams = context.Teams.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                            && a.semester == semester && a.year == year);
-                var list = new List<object>();
+                var body = Helper.JsonConverter.Decode(json);
+                var sec_id = int.Parse(body["sec_id"]);
+                var course_id = int.Parse(body["course_id"]);
+                var semester = body["semester"];
+                var year = int.Parse(body["year"]);
 
-                foreach (var each_team in teams)
+                using (var context = new NBackendContext())
                 {
-                    var team_members = context.TeamStudents.Where(a => a.teamId == each_team.TeamId);
-                    var member_list = new List<object>();
-                    foreach (var team_member in team_members)
+                    var teams = context.Teams.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                                && a.semester == semester && a.year == year);
+                    var list = new List<object>();
+
+                    foreach (var each_team in teams)
                     {
-                        member_list.Add(new
+                        var team_members = context.TeamStudents.Where(a => a.teamId == each_team.TeamId);
+                        var member_list = new List<object>();
+                        foreach (var team_member in team_members)
                         {
-                            student_id = team_member.studentId,
-                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
+                            member_list.Add(new
+                            {
+                                student_id = team_member.studentId,
+                                student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
+                            });
+                        }
+                        list.Add(new
+                        {
+                            team_id = each_team.TeamId,
+                            team_name = each_team.team_name,
+                            students = JsonConvert.SerializeObject(member_list)
                         });
                     }
-                    list.Add(new
+
+                    var data = new
                     {
-                        team_id = each_team.TeamId,
-                        team_name = each_team.team_name,
-                        students = JsonConvert.SerializeObject(member_list)
-                    });
+                        teams = list
+                    };
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var data = new
-                {
-                    teams = list
-                };
-
-
-                return Helper.JsonConverter.BuildResult(data);
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
         //根据关键字获取队伍
         public static object GetTeamsByKeyWords(object json)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var sec_id = int.Parse(body["sec_id"]);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-            var key_words = body["key_word"];
-
-            using (var context = new NBackendContext())
+            try
             {
-                var teams = context.Teams.Where(a => a.secId == sec_id && a.courseId == course_id
-                                                            && a.semester == semester && a.year == year && a.team_name.Contains(key_words));
-                var list = new List<object>();
+                var body = Helper.JsonConverter.Decode(json);
+                var sec_id = int.Parse(body["sec_id"]);
+                var course_id = int.Parse(body["course_id"]);
+                var semester = body["semester"];
+                var year = int.Parse(body["year"]);
+                var key_words = body["key_word"];
 
-                foreach (var each_team in teams)
+                using (var context = new NBackendContext())
                 {
-                    var team_members = context.TeamStudents.Where(a => a.teamId == each_team.TeamId);
-                    var member_list = new List<object>();
-                    foreach (var team_member in team_members)
+                    var teams = context.Teams.Where(a => a.secId == sec_id && a.courseId == course_id
+                                                                && a.semester == semester && a.year == year && a.team_name.Contains(key_words));
+                    var list = new List<object>();
+
+                    foreach (var each_team in teams)
                     {
-                        member_list.Add(new
+                        var team_members = context.TeamStudents.Where(a => a.teamId == each_team.TeamId);
+                        var member_list = new List<object>();
+                        foreach (var team_member in team_members)
                         {
-                            student_id = team_member.studentId,
-                            student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
+                            member_list.Add(new
+                            {
+                                student_id = team_member.studentId,
+                                student_name = context.Users.Where(a => a.Id == team_member.studentId).Single().user_name
+                            });
+                        }
+                        list.Add(new
+                        {
+                            team_id = each_team.TeamId,
+                            team_name = each_team.team_name,
+                            students = JsonConvert.SerializeObject(member_list)
                         });
                     }
-                    list.Add(new
+
+                    var data = new
                     {
-                        team_id = each_team.TeamId,
-                        team_name = each_team.team_name,
-                        students = JsonConvert.SerializeObject(member_list)
-                    });
+                        teams = list
+                    };
+
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var data = new
-                {
-                    teams = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
         //根据学生id获取其队伍列表
         public static object GetItsTeams(object json)
         {
-
-            var body = Helper.JsonConverter.Decode(json);
-            var student_id = int.Parse(body["user_id"]);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var any_student = context.Users.Where(a => a.Id == student_id);
-                if (!any_student.Any())
-                {
-                    return Helper.JsonConverter.Error(400, "这个人有问题");
-                }
+                var body = Helper.JsonConverter.Decode(json);
+                var student_id = int.Parse(body["user_id"]);
 
-                var teams = context.TeamStudents.Where(a => a.studentId == student_id);
-                var list = new List<object>();
-
-                foreach (var each_team in teams)
+                using (var context = new NBackendContext())
                 {
-                    var team_members = context.TeamStudents.Where(a => a.teamId == each_team.teamId);
-                    var member_list = new List<object>();
-                    var team_info = context.Teams.Single(a => a.TeamId == each_team.teamId);
-                    var course_info = context.Courses.Single(a => a.CourseId == team_info.courseId);
-                    foreach (var team_member in team_members)
+                    var any_student = context.Users.Where(a => a.Id == student_id);
+                    if (!any_student.Any())
                     {
-                        member_list.Add(new
+                        return Helper.JsonConverter.Error(400, "这个人有问题");
+                    }
+
+                    var teams = context.TeamStudents.Where(a => a.studentId == student_id);
+                    var list = new List<object>();
+
+                    foreach (var each_team in teams)
+                    {
+                        var team_members = context.TeamStudents.Where(a => a.teamId == each_team.teamId);
+                        var member_list = new List<object>();
+                        var team_info = context.Teams.Single(a => a.TeamId == each_team.teamId);
+                        var course_info = context.Courses.Single(a => a.CourseId == team_info.courseId);
+                        foreach (var team_member in team_members)
                         {
-                            student_id = team_member.studentId,
-                            student_name = context.Users.Single(a => a.Id == team_member.studentId).user_name
+                            member_list.Add(new
+                            {
+                                student_id = team_member.studentId,
+                                student_name = context.Users.Single(a => a.Id == team_member.studentId).user_name
+                            });
+                        }
+                        list.Add(new
+                        {
+                            year = team_info.year,
+                            semester = team_info.semester,
+                            sec_id = team_info.secId,
+                            course_id = team_info.courseId,
+                            course_name = course_info.course_name,
+                            team_id = each_team.teamId,
+                            team_name = team_info.team_name,
+                            students = JsonConvert.SerializeObject(member_list)
                         });
                     }
-                    list.Add(new
+
+                    var data = new
                     {
-                        year = team_info.year,
-                        semester = team_info.semester,
-                        sec_id = team_info.secId,
-                        course_id = team_info.courseId,
-                        course_name = course_info.course_name,
-                        team_id = each_team.teamId,
-                        team_name = team_info.team_name,
-                        students = JsonConvert.SerializeObject(member_list)
-                    });
+                        teams = list
+                    };
+
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var data = new
-                {
-                    teams = list
-                };
-
-                return Helper.JsonConverter.BuildResult(data);
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
         //创建一个队伍
-        public static object PostTeam(object json)
+        public static object PostTeam(object json, string token)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var sec_id = int.Parse(body["sec_id"]);
-            var course_id = int.Parse(body["course_id"]);
-            var semester = body["semester"];
-            var year = int.Parse(body["year"]);
-            var team_name = body["team_name"];
-
-            using (var context = new NBackendContext())
+            try
             {
-                var any_section = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id
-                                                            && a.semester == semester && a.year == year);
-                if (!any_section.Any())
+                var body = Helper.JsonConverter.Decode(json);
+                var sec_id = int.Parse(body["sec_id"]);
+                var course_id = int.Parse(body["course_id"]);
+                var semester = body["semester"];
+                var year = int.Parse(body["year"]);
+                var team_name = body["team_name"];
+                var user_id = Helper.JwtManager.DecodeToken(token);
+
+                using (var context = new NBackendContext())
                 {
-                    return Helper.JsonConverter.Error(400, "不存在这个班");
+                    var any_section = context.Sections.Where(a => a.SecId == sec_id && a.courseId == course_id
+                                                                && a.semester == semester && a.year == year);
+                    if (!any_section.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "不存在这个班");
+                    }
+
+                    var new_team = new Team
+                    {
+                        secId = sec_id,
+                        courseId = course_id,
+                        semester = semester,
+                        year = year,
+                        team_name = team_name,
+                    };
+                    context.Teams.Add(new_team);
+
+                    try
+                    {
+                        context.SaveChanges();
+                    }
+                    catch (Exception e)
+                    {
+                        System.Console.Write(e.Message);
+                        return Helper.JsonConverter.Error(410, "向team表中加入数据时发生错误");
+                    }
+
+                    context.TeamStudents.Add(new TeamStudent
+                    {
+                        teamId = new_team.TeamId,
+                        studentId = user_id
+                    });
+                    context.SaveChanges();
+                    var data = new
+                    {
+                        team_id = new_team.TeamId
+                    };
+                    return Helper.JsonConverter.BuildResult(data);
                 }
-
-                var new_team = new Team
-                {
-                    secId = sec_id,
-                    courseId = course_id,
-                    semester = semester,
-                    year = year,
-                    team_name = team_name,
-                };
-                context.Teams.Add(new_team);
-
-                context.SaveChanges();
-
-                var data = new
-                {
-                    team_id = new_team.TeamId
-                };
-                return Helper.JsonConverter.BuildResult(data);
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 
         //学生加入队伍
         public static object PostTeamAttendance(object json)
         {
-            var body = Helper.JsonConverter.Decode(json);
-            var team_id = int.Parse(body["team_id"]);
-            var student_id = int.Parse(body["user_id"]);
-
-            using (var context = new NBackendContext())
+            try
             {
-                var any_team = context.Teams.Where(a => a.TeamId == team_id);
-                if (!any_team.Any())
-                {
-                    return Helper.JsonConverter.Error(400, "没队伍啊");
-                }
+                var body = Helper.JsonConverter.Decode(json);
+                var team_id = int.Parse(body["team_id"]);
+                var student_id = int.Parse(body["user_id"]);
 
-                var any_student = context.Students.Where(a => a.StudentId == student_id);
-                if (!any_student.Any())
+                using (var context = new NBackendContext())
                 {
-                    return Helper.JsonConverter.Error(400, "这个人有问题啊");
-                }
+                    var any_team = context.Teams.Where(a => a.TeamId == team_id);
+                    if (!any_team.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "没队伍啊");
+                    }
 
-                context.TeamStudents.Add(new TeamStudent
-                {
-                    teamId = team_id,
-                    studentId = student_id
-                });
-                context.SaveChanges();
-                return Helper.JsonConverter.BuildResult(null);
+                    var any_student = context.Students.Where(a => a.StudentId == student_id);
+                    if (!any_student.Any())
+                    {
+                        return Helper.JsonConverter.Error(400, "这个人有问题啊");
+                    }
+
+                    context.TeamStudents.Add(new TeamStudent
+                    {
+                        teamId = team_id,
+                        studentId = student_id
+                    });
+                    context.SaveChanges();
+                    return Helper.JsonConverter.BuildResult(null);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.Write(e.Message);
+                return Helper.JsonConverter.Error(410, "数据库中可能存在不一致现象，请检查");
             }
         }
 

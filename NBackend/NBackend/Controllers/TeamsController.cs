@@ -63,7 +63,7 @@ namespace NBackend.Controllers
             {
                 return Helper.JsonConverter.Error(401, "你还没登录？");
             }
-            return Biz.TeamBiz.PostTeam(json);
+            return Biz.TeamBiz.PostTeam(json, token);
         }
 
         [AllowAnonymous]

@@ -35,7 +35,7 @@ namespace NBackend.Controllers
             {
                 return Helper.JsonConverter.Error(401, "你还没登录啊");
             }
-            return Biz.DiscussionBiz.GetDiscussionSummary(json,token);
+            return Biz.DiscussionBiz.GetDiscussionSummary(json, token);
         }
 
         [AllowAnonymous]
