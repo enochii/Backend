@@ -62,94 +62,98 @@ namespace NBackend.Biz
         //创建广播
         public static object postBroadcast(string token, object json)
         {
-
-
-            var body = JsonConverter.Decode(json);
-            NBackendContext ctx = new NBackendContext();
-
-            int teacher_id = JwtManager.DecodeToken(token);
-            User user = UserBiz.getUserById(ctx, teacher_id);
-            if (user == null)
+            try
             {
-                return Helper.JsonConverter.Error(400, "你还没登录？");
-            }
+                var body = JsonConverter.Decode(json);
+                NBackendContext ctx = new NBackendContext();
 
-            int type = int.Parse(body["type"]);
-            int scope = int.Parse(body["scope"]);
-
-            string start_time = body["start_time"];
-            string end_time = body["end_time"];
-            string published_time = body["published_time"];
-            string content = body["content"];
-
-            //k
-            int sec_id, course_id, year;
-            string semester;
-
-            if (scope == SCOPE_CLASS)
-            {
-                if (!user.role.Equals("teacher_edu"))
+                int teacher_id = JwtManager.DecodeToken(token);
+                User user = UserBiz.getUserById(ctx, teacher_id);
+                if (user == null)
                 {
-                    return Helper.JsonConverter.Error(400, "你没有权限呢");
+                    return Helper.JsonConverter.Error(400, "你还没登录？");
                 }
-                sec_id = int.Parse(body["sec_id"]);
-                course_id = int.Parse(body["course_id"]);
-                year = int.Parse(body["year"]);
-                semester = body["semester"];
-            }
-            else
-            {
-                if (!user.role.Equals("teacher_manage"))
+
+                int type = int.Parse(body["type"]);
+                int scope = int.Parse(body["scope"]);
+
+                string start_time = body["start_time"];
+                string end_time = body["end_time"];
+                string published_time = body["published_time"];
+                string content = body["content"];
+
+                //k
+                int sec_id, course_id, year;
+                string semester;
+
+                if (scope == SCOPE_CLASS)
                 {
-                    return Helper.JsonConverter.Error(400, "你没有权限呢");
+                    if (!user.role.Equals("teacher_edu"))
+                    {
+                        return Helper.JsonConverter.Error(400, "你没有权限呢");
+                    }
+                    sec_id = int.Parse(body["sec_id"]);
+                    course_id = int.Parse(body["course_id"]);
+                    year = int.Parse(body["year"]);
+                    semester = body["semester"];
                 }
-                //默认班级
-                sec_id = 1;
-                course_id = 2;
-                year = 2019;
-                semester = "Spring";
+                else
+                {
+                    if (!user.role.Equals("teacher_manage"))
+                    {
+                        return Helper.JsonConverter.Error(400, "你没有权限呢");
+                    }
+                    //默认班级
+                    sec_id = 1;
+                    course_id = 2;
+                    year = 2019;
+                    semester = "Spring";
+                }
+                Broadcast broadcast = new Broadcast
+                {
+                    secId = sec_id,
+                    courseId = course_id,
+                    year = year,
+                    semester = semester,
+
+                    scope = scope,
+                    type = type,
+                    start_time = start_time,
+                    publish_time = published_time,
+                    end_time = end_time,
+                    content = content
+                };
+
+                ctx.TeacherBroadcasts.Add(new TeacherBroadcast
+                {
+                    teacherId = teacher_id,
+                    broadcastId = broadcast.BroadcastId
+                });
+
+                ctx.Broadcasts.Add(broadcast);
+                ValidationHelper.safeSaveChanges(ctx);
+
+                var data = new
+                {
+                    broadcast_id = broadcast.BroadcastId
+                };
+                return JsonConverter.BuildResult(data);
             }
-            Broadcast broadcast = new Broadcast
+            catch(Exception e)
             {
-                secId = sec_id,
-                courseId = course_id,
-                year = year,
-                semester = semester,
-
-                scope = scope,
-                type = type,
-                start_time = start_time,
-                publish_time = published_time,
-                end_time = end_time,
-                content = content
-            };
-
-            ctx.TeacherBroadcasts.Add(new TeacherBroadcast
-            {
-                teacherId = teacher_id,
-                broadcastId = broadcast.BroadcastId
-            });
-
-            ctx.Broadcasts.Add(broadcast);
-            ValidationHelper.safeSaveChanges(ctx);
-
-            var data = new
-            {
-                broadcast_id = broadcast.BroadcastId
-            };
-            return JsonConverter.BuildResult(data);
-
+                return JsonConverter.Error(400, "创建广播失败");
+            }
 
         }
 
         //获取班级的所有广播
         private static List<object> getBroadcastsOfClass(string token, object json)
         {
-            int user_id = JwtManager.DecodeToken(token);
-            //做验证
-
             try
             {
+                int user_id = JwtManager.DecodeToken(token);
+                //做验证
+
                 var body = JsonConverter.Decode(json);
                 int sec_id = int.Parse(body["sec_id"]);
                 int course_id = int.Parse(body["course_id"]);
@@ -262,105 +266,124 @@ namespace NBackend.Biz
         {
             List<object> class_bros = null;
 
-            var global_bros = getGlobalBroadcasts();
-
-            if (all)
+            try
             {
-                class_bros = getAllBroadcasts(token);
-                foreach (object bro in global_bros)
+                if (all)
                 {
-                    class_bros.Add(bro);
+                    var global_bros = getGlobalBroadcasts();//全局广播
+                    class_bros = getAllBroadcasts(token);//所有班级的广播
+                    foreach (object bro in global_bros)
+                    {
+                        class_bros.Add(bro);
+                    }
                 }
-            }
-            else
-            {
-                class_bros = getBroadcastsOfClass(token, json);
-                if (class_bros == null)
+                else
                 {
-                    return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
+                    class_bros = getBroadcastsOfClass(token, json);
+                    if (class_bros == null)
+                    {
+                        return JsonConverter.Error(400, "嘻嘻，前端哥哥姐姐填写的字段有问题");
+                    }
                 }
-            }
 
-            return JsonConverter.BuildResult(new { broadcasts = class_bros });
+                return JsonConverter.BuildResult(new { broadcasts = class_bros });
+            }
+            catch(Exception e)
+            {
+                return JsonConverter.Error(404, "查找广播资源时出错");
+            }
         }
  
 
         //删除广播
         public static object deleteBroadcast(string token, object json)
         {
-            var body = JsonConverter.Decode(json);
-            int broadcast_id = int.Parse(body["broadcast_id"]);
-            int user_id = JwtManager.DecodeToken(token);
-
-            NBackendContext ctx = new NBackendContext();
-
-            var q = ctx.TeacherBroadcasts.Where(tb => tb.broadcastId == broadcast_id && tb.teacherId == user_id);
-            var q1 = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
-
-            if (!q.Any())
+            try
             {
-                return JsonConverter.Error(400, "该广播不存在或者你没有创建过该广播(＾Ｕ＾)ノ~ＹＯ");
-            }
-            var _tb = q.Single();
-            var broadcast = q1.Single();
-            ctx.TeacherBroadcasts.Remove(_tb);
-            ctx.Broadcasts.Remove(broadcast);
+                var body = JsonConverter.Decode(json);
+                int broadcast_id = int.Parse(body["broadcast_id"]);
+                int user_id = JwtManager.DecodeToken(token);
 
-            ctx.SaveChanges();
-            return JsonConverter.BuildResult(null);
-            
+                NBackendContext ctx = new NBackendContext();
+
+                var q = ctx.TeacherBroadcasts.Where(tb => tb.broadcastId == broadcast_id && tb.teacherId == user_id);
+                var q1 = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
+
+                if (!q.Any())
+                {
+                    return JsonConverter.Error(400, "该广播不存在或者你没有创建过该广播(＾Ｕ＾)ノ~ＹＯ");
+                }
+                var _tb = q.Single();
+                var broadcast = q1.Single();
+                ctx.TeacherBroadcasts.Remove(_tb);
+                ctx.Broadcasts.Remove(broadcast);
+
+                ctx.SaveChanges();
+                return JsonConverter.BuildResult(null);
+            }
+            catch(Exception e)
+            {
+                return JsonConverter.Error(400, e.Message);
+            }
         }
         //获取广播的具体信息
         public static object getBroastInfo(string token, object json)
         {
-            var body = JsonConverter.Decode(json);
-            int broadcast_id = int.Parse(body["broadcast_id"]);
-
-            NBackendContext ctx = new NBackendContext();
-            var q = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
-
-            if (!q.Any())
+            try
             {
-                return JsonConverter.Error(400, "该广播不存在！");
-            }
+                var body = JsonConverter.Decode(json);
+                int broadcast_id = int.Parse(body["broadcast_id"]);
 
-            var broadcast = q.Single();
+                NBackendContext ctx = new NBackendContext();
+                var q = ctx.Broadcasts.Where(bro => bro.BroadcastId == broadcast_id);
 
-            object data;
-            if (broadcast.scope == SCOPE_CLASS)
-            {
-                data = new
+                if (!q.Any())
                 {
-                    broadcast_id,
-                    broadcast.content,
-                    broadcast.type,
-                    broadcast.scope,
-                    sec_id = broadcast.secId,
-                    course_id = broadcast.courseId,
-                    broadcast.semester,
-                    broadcast.year,
-                    broadcast.start_time,
-                    broadcast.end_time,
-                    broadcast.publish_time,
-                };
-            }
-            else
-            {
-                data = new
+                    return JsonConverter.Error(400, "该广播不存在！");
+                }
+
+                var broadcast = q.Single();
+
+                object data;
+                if (broadcast.scope == SCOPE_CLASS)
                 {
-                    broadcast_id,
-                    broadcast.content,
-                    broadcast.type,
-                    broadcast.scope,
+                    data = new
+                    {
+                        broadcast_id,
+                        broadcast.content,
+                        broadcast.type,
+                        broadcast.scope,
+                        sec_id = broadcast.secId,
+                        course_id = broadcast.courseId,
+                        broadcast.semester,
+                        broadcast.year,
+                        broadcast.start_time,
+                        broadcast.end_time,
+                        broadcast.publish_time,
+                    };
+                }
+                else
+                {
+                    data = new
+                    {
+                        broadcast_id,
+                        broadcast.content,
+                        broadcast.type,
+                        broadcast.scope,
 
-                    broadcast.start_time,
-                    broadcast.end_time,
-                    broadcast.publish_time,
-                };
-                
+                        broadcast.start_time,
+                        broadcast.end_time,
+                        broadcast.publish_time,
+                    };
+
+                }
+
+                return JsonConverter.BuildResult(data);
             }
-
-            return JsonConverter.BuildResult(data);
+            catch(Exception e)
+            {
+                return JsonConverter.Error(400, "请检查输入字段格式或者值");
+            }
         }
     }
 }
