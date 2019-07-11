@@ -38,20 +38,73 @@ namespace NBackend.Biz
         {
             int user_id = JwtManager.DecodeToken(token);
 
-            //参加的考试
+            NBackendContext ctx = new NBackendContext();
 
+            User user = UserBiz.getUserById(ctx, user_id);
+
+            //参加的考试
+            var qexam_taken = ctx.TakesExams.Where(te => te.Student.StudentId == user_id);
 
             //参加的课程的所有考试
+            var qexam_all = ctx.Takes.Where(take => take.StudentId == user_id).Join(ctx.Exams, take => take.Section, exam => exam.Section
+            , (take, exam) => exam
+            );
 
             //没参加的考试成绩为0
+            var qexam_not_taken = qexam_all.Except(qexam_taken.Select(qt => qt.Exam));
+
+            int exam_num = qexam_all.Count();
+            List<object> exams = new List<object>();
+
+            foreach(var et in qexam_taken)
+            {
+                int grade = 1;//等级
+                Course course = et.Exam.Course;
+                int score = getTotalScore(ctx, et.ExamId);
+                if(score == 0)
+                {
+                    return Helper.JsonConverter.Error(400, "这张试卷有问题");
+                }
+
+                grade = (int)((float)et.score * 5 / score);
+
+                exams.Add(new
+                {
+                    exam_id = et.ExamId,
+                    course.course_name,
+                    et.Exam.title,
+                    grade
+                });
+            }
+
+            foreach(var ent in qexam_not_taken)
+            {
+                Course course = ent.Course;
+                exams.Add(new
+                {
+                    exam_id = ent.ExamId,
+                    course.course_name,
+                    ent.title,
+                    grade = 1
+                });
+            }
 
             var data = new
             {
-                
-
+                exam_num,
+                exams
             };
 
-            return Helper.JsonConverter.Error(400, "还没写呢");
+            return Helper.JsonConverter.BuildResult(data);
+        }
+
+        //考虑要不要给试卷加总分字段
+        //获取某场考试的总分
+        private static int getTotalScore(NBackendContext ctx, int exam_id)
+        {
+            int ret = ctx.ExamQuestions.Where(eq => eq.examId == exam_id).Sum(eq => eq.score);
+
+            return ret;
         }
 
         //学生提交试卷
@@ -320,7 +373,7 @@ namespace NBackend.Biz
                     {
                         exam_id = exam.ExamId,
                         scope = exam.scope,
-                        type = exam.type,
+                        type = id2Type(exam.type),
                         start_time = exam.start_time,
                         end_time = exam.end_time,
                         title = exam.title,
@@ -336,7 +389,7 @@ namespace NBackend.Biz
                     {
                         exam_id = exam.ExamId,
                         scope = exam.scope,
-                        type = exam.type,
+                        type = id2Type(exam.type),
                         start_time = exam.start_time,
                         end_time = exam.end_time,
                         title = exam.title,
@@ -436,13 +489,17 @@ namespace NBackend.Biz
                 var q2 = ctx.TakesExams.Where(te => te.StudentId == user_id &&
                 te.ExamId == exam_id
                 );
-                if (!q2.Any())
-                {
-                    return Helper.JsonConverter.Error(400, "无效用户或考试");
-                }
+                //if (!q2.Any())
+                //{
+                //    return Helper.JsonConverter.Error(400, "无效用户或考试");
+                //}
 
-                var ex = q2.Single().Exam;
-                string cur_time = DateTime.Now.ToUniversalTime().ToString().Replace('-', '.');
+                //var ex = q2.Single().Exam;
+                var ex = getExamById(ctx, exam_id);
+
+                string datePatt = @"MM/dd/yyyy hh:mm:ss tt";
+                string cur_time = DateTime.Now.ToLocalTime().ToString(datePatt).Replace('/', '.');
+
 
                 bool exam_ended = false;
                 if (cur_time.CompareTo(ex.end_time) != -1)
