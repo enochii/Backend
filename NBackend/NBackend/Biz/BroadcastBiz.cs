@@ -14,7 +14,7 @@ namespace NBackend.Biz
         const int TYPE_JOB = 1, TYPE_ACTIVITY = 2;
         const int SCOPE_CLASS = 1, SCOPE_GOLBAL = 2;
 
-        
+
 
         public static object GetAllHomework(object json)
         {
@@ -139,7 +139,7 @@ namespace NBackend.Biz
                 };
                 return JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return JsonConverter.Error(400, "创建广播失败");
             }
@@ -164,18 +164,18 @@ namespace NBackend.Biz
 
                 var class_bros = _getBroadcastsOfClass(ctx, sec_id, course_id, year, semester);
 
-                if(class_bros == null)
+                if (class_bros == null)
                 {
                     return new List<object>();
                 }
                 return ListToObj(class_bros);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                
+
                 return null;
             }
-            
+
 
         }
 
@@ -199,11 +199,11 @@ namespace NBackend.Biz
             else
             {
                 var q = ctx.Teaches.Where(take => take.TeacherId == user_id).ToList().Select(take => new { take.SecId, take.courseId, take.semester, take.year }).ToList();
-                q1 = ctx.Broadcasts.ToList().Join(q, take => new { take.courseId, take.semester, take.year }, sec => new { sec.courseId,sec.semester,sec.year},
-                (bro, sec) => new { bro, sec.SecId}
-                ).Where(bro => bro.bro.scope == SCOPE_CLASS && bro.SecId==bro.bro.secId).Select(bro=>bro.bro).ToList();
+                q1 = ctx.Broadcasts.ToList().Join(q, take => new { take.courseId, take.semester, take.year }, sec => new { sec.courseId, sec.semester, sec.year },
+                (bro, sec) => new { bro, sec.SecId }
+                ).Where(bro => bro.bro.scope == SCOPE_CLASS && bro.SecId == bro.bro.secId).Select(bro => bro.bro).ToList();
             }
-            
+
 
             //if (q.Any())
             //{
@@ -219,7 +219,7 @@ namespace NBackend.Biz
             //    (bro, course) => new {bro, course.}
 
             List<Broadcast> all_sec_exams = new List<Broadcast>();
-            foreach(var bro in q1)
+            foreach (var bro in q1)
             {
                 all_sec_exams.Add(bro);
             }
@@ -242,7 +242,7 @@ namespace NBackend.Biz
         {
             List<object> list = new List<object>();
 
-            foreach(Broadcast broadcast in broadcasts)
+            foreach (Broadcast broadcast in broadcasts)
             {
                 list.Add(new
                 {
@@ -273,19 +273,19 @@ namespace NBackend.Biz
                 return null;
             }
 
-            var q = ctx.Broadcasts.ToList().Where(broadcast => broadcast.semester ==sec.semester && broadcast.year == sec.year
+            var q = ctx.Broadcasts.ToList().Where(broadcast => broadcast.semester == sec.semester && broadcast.year == sec.year
             && broadcast.secId == sec.SecId && broadcast.courseId == sec.courseId && broadcast.scope == SCOPE_CLASS
             ).ToList();
             var broadcasts = q.ToList();
 
             return broadcasts;
         }
-      
+
         private static List<Broadcast> _getGlobalBroadcasts(NBackendContext ctx)
         {
 
             var q = ctx.Broadcasts.Where(bro => bro.scope == SCOPE_GOLBAL);
-            var bros =  q.ToList();
+            var bros = q.ToList();
 
             return bros;
         }
@@ -325,12 +325,12 @@ namespace NBackend.Biz
 
                 return JsonConverter.BuildResult(new { broadcasts = class_bros });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return JsonConverter.Error(404, "查找广播资源时出错");
             }
         }
- 
+
 
         //删除广播
         public static object deleteBroadcast(string token, object json)
@@ -358,7 +358,7 @@ namespace NBackend.Biz
                 ctx.SaveChanges();
                 return JsonConverter.BuildResult(null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return JsonConverter.Error(400, e.Message);
             }
@@ -417,7 +417,7 @@ namespace NBackend.Biz
 
                 return JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return JsonConverter.Error(400, "请检查输入字段格式或者值");
             }

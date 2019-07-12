@@ -131,7 +131,8 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         public object DeleteQuestion(object json)
         {
-            return json;
+            var token = Request.Headers.Authorization.Parameter;
+            return ExamBiz.deleteQuestion(token, json);
         }
         //修改一个题目
         [AllowAnonymous]
@@ -166,6 +167,7 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         [Route("api/finished_exam")]
         [Route("api/exams")]
+        [Route("api/exam_summary")]
         public object Options()
         {
             return null;
