@@ -810,11 +810,11 @@ namespace NBackend.Biz
                 var qstus = ctx.Exams.Join(ctx.Takes, ex => new { ex.year, ex.courseId },//最多两个键？Section又不行。。。
                     take => new { take.Section.year, take.Section.courseId },
                     (ex, take) => new { exam_id, take, ex.semester, ex.secId }
-                    ).Where(_ => _.take.Section.semester == _.semester && _.take.Section.SecId == _.secId).Select(_ => new { _.take.Student, _.exam_id }).ToList();
+                    ).Where(_ => _.take.Section.semester == _.semester && _.take.Section.SecId == _.secId && _.exam_id == exam_id).Select(_ => new { _.take.Student, _.exam_id }).ToList();
                 //获得参加本场考试的学生的信息和分数
                 var qstus_taken = qstus.Join(ctx.TakesExams, stu => stu.Student, te => te.Student,
-                    (stu, te) => new { stu, te.score }
-                    ).Where(stu => stu.stu.exam_id == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score }).ToList();
+                    (stu, te) => new { stu, te.score, te.ExamId }
+                    ).Where(stu => stu.stu.exam_id == exam_id && stu.ExamId == exam_id).Select(stu_score => new { stu_score.stu.Student, stu_score.score }).ToList();
 
                 //拿到所有学生
                 var qstus_only = qstus.Select(stu => stu.Student);

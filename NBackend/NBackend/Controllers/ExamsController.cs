@@ -167,6 +167,7 @@ namespace NBackend.Controllers
         [Route("api/questions")]
         [Route("api/finished_exam")]
         [Route("api/exams")]
+        [Route("api/exam_summary")]
         public object Options()
         {
             return null;

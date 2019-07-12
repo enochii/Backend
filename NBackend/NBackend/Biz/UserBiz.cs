@@ -100,7 +100,7 @@ namespace NBackend.Biz
 
                 return JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "更新信息出错");
             }
@@ -112,8 +112,8 @@ namespace NBackend.Biz
             {
                 var list = new List<object>();
 
-               
-                foreach(var user in users)
+
+                foreach (var user in users)
                 {
                     list.Add(new
                     {
@@ -126,12 +126,12 @@ namespace NBackend.Biz
                         avatar = user.avatar
                     });
                 }
-                
+
                 return list;
 
             }
 
-                //return null;
+            //return null;
         }
 
         public static object Register(object json)
@@ -210,9 +210,9 @@ namespace NBackend.Biz
 
                 return JsonConverter.BuildResult(null, 200, "ok");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return Helper.JsonConverter.Error(400 , "注册失败，请检查表单字段或者用户id是否正确输入");
+                return Helper.JsonConverter.Error(400, "注册失败，请检查表单字段或者用户id是否正确输入");
             }
         }
 
@@ -280,7 +280,7 @@ namespace NBackend.Biz
                 int id = int.Parse(body["user_id"]);
 
                 var user = getUserById(ctx, id);
-                if(user == null)
+                if (user == null)
                 {
                     return JsonConverter.Error(400, "火星用户！");
                 }
@@ -288,7 +288,7 @@ namespace NBackend.Biz
                 int grade = -1;
                 string job_title = "";
 
-                if(!getGradeOrTitle(ctx, user,ref grade, ref job_title))
+                if (!getGradeOrTitle(ctx, user, ref grade, ref job_title))
                 {
                     return JsonConverter.Error(400, "用户信息有误");
                 }
@@ -309,7 +309,7 @@ namespace NBackend.Biz
                 };
 
                 return JsonConverter.BuildResult(data, 200, "ok");
-                
+
             }
             else if (body.ContainsKey("user_name") && !body["user_name"].Equals(""))
             {
@@ -320,7 +320,7 @@ namespace NBackend.Biz
                 var _users = q.ToList();
 
                 return ListToObj(ctx, _users);
-                
+
             }
             else
             {
@@ -341,7 +341,7 @@ namespace NBackend.Biz
 
             var _users = followers ? user.followers : user.following;
             var users = _users.ToList();
-            
+
             return ListToObj(ctx, users);
         }
 
@@ -357,9 +357,9 @@ namespace NBackend.Biz
 
         private static bool containsUser(List<User> users, User user)
         {
-            foreach(var _user in users)
+            foreach (var _user in users)
             {
-                if(user.Id == _user.Id)
+                if (user.Id == _user.Id)
                 {
                     return true;
                 }
@@ -379,12 +379,12 @@ namespace NBackend.Biz
                 User user = getUserById(ctx, user_id);
                 User following = getUserById(ctx, following_id);
 
-                if(user==null || following == null)
+                if (user == null || following == null)
                 {
                     return Helper.JsonConverter.Error(400, "用户信息有误");
                 }
 
-                if(user.Id == following.Id)
+                if (user.Id == following.Id)
                 {
                     return Helper.JsonConverter.Error(400, "请不要follow自己");
                 }
@@ -404,7 +404,7 @@ namespace NBackend.Biz
                 ctx.SaveChanges();
                 return Helper.JsonConverter.BuildResult(null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "关注失败");
             }
@@ -436,7 +436,7 @@ namespace NBackend.Biz
                 ctx.SaveChanges();
                 return Helper.JsonConverter.BuildResult(null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return Helper.JsonConverter.Error(400, "取消关注失败");
             }
@@ -530,7 +530,7 @@ namespace NBackend.Biz
 
                 return JsonConverter.BuildResult(data);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return JsonConverter.Error(400, "获取关注信息出错");
             }
